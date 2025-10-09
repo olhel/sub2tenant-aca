@@ -1,0 +1,145 @@
+:root{
+  /* ===== Bsure brand tokens ===== */
+  --bsure-navy: #091A33;
+  --bsure-bright-blue: #0248CE;
+  --bsure-green: #0BB184;
+  --bsure-purple: #7063C3;
+  --bsure-dark-grey: #7B94B5;
+  --bsure-light-blue: #F2F7FE;
+  --bsure-blue: #C3DDFD;
+  --bsure-grey: #BFD6E8;
+  --bsure-light-green: #CAF4E8;
+  --bsure-light-purple: #E6E2FF;
+  --bsure-light-turquoise: #DCFFFC;
+  --bsure-light-yellow: #FEFFDE;
+  --bsure-white: #FFFFFF;
+
+  /* ===== App theme ===== */
+  --bg-app: var(--bsure-navy);
+  --bg-card: #0f1a2b;
+  --border: #243650;
+  --text: #E7ECF3;
+  --text-muted: #A5B0C6;
+  --action: var(--bsure-bright-blue);
+  --action-hover: #01389f;
+  --success: var(--bsure-green);
+  --accent: var(--bsure-purple);
+  --radius: 16px;
+  --shadow: 0 14px 38px rgba(0,0,0,.35);
+}
+
+/* === Base === */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;
+  color:var(--text); background:var(--bg-app);
+  background-image: radial-gradient(1200px 600px at 70% -10%, rgba(2,72,206,.15), transparent);
+}
+
+/* === Header layout (logo left, title center, chip right) === */
+.nav {
+  background: var(--bg-app);
+  padding: 24px 20px 16px;
+}
+
+.nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 980px;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* Left logo */
+.brand-logo {
+  height: 22px;
+  width: auto;
+  image-rendering: -webkit-optimize-contrast;
+}
+
+/* Centered title */
+.brand-title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.25px;
+  color: var(--text);
+  text-align: center;
+}
+
+/* Right "signed in" chip */
+.chip {
+  background: rgba(255, 255, 255, 0.06);
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+/* Mobile adjustments */
+@media (max-width: 640px) {
+  .brand-title {
+    position: static;
+    transform: none;
+    text-align: left;
+    font-size: 1rem;
+  }
+  .nav-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+  }
+}
+
+
+/* === Layout === */
+/* Center the main content vertically with breathing space */
+.wrap {
+  max-width: 980px;
+  margin: 80px auto 60px;   /* pushes content down */
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 50vh;          /* ensures good spacing on short screens */
+}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}
+h1{margin:0 0 .25rem;font-size:22px}
+.lead{color:var(--text-muted);margin:0 0 14px}
+
+/* === Form === */
+.form{display:flex;gap:.6rem;flex-wrap:wrap;margin:8px 0 14px}
+input[type=text]{
+  flex:1 1 440px;padding:.9rem 1rem;border-radius:14px;border:1px solid var(--border);
+  background:#0e1627;color:var(--text);outline:none;transition:border-color .2s,box-shadow .2s
+}
+input[type=text]:focus{border-color:var(--action);box-shadow:0 0 0 3px rgba(2,72,206,.25)}
+button{padding:.9rem 1.05rem;border-radius:14px;border:1px solid transparent;background:var(--action);color:#fff;font-weight:600;cursor:pointer}
+button:hover{background:var(--action-hover)}
+button:active{transform:translateY(1px)}
+button.secondary{background:transparent;border-color:var(--border);color:var(--text)}
+
+/* === Result === */
+.status{color:var(--text-muted);min-height:24px}
+.status.err{color:#ffb4c0}
+.grid{display:grid;grid-template-columns:220px 1fr;gap:.6rem .9rem;align-items:center}
+.k{color:var(--text-muted)}
+.v{font-family:ui-monospace,Consolas,Menlo,monospace;word-break:break-all}
+
+/* === Footer === */
+.footer{margin:18px auto 0;max-width:980px;padding:8px 20px;color:var(--text-muted);font-size:12px;display:flex;justify-content:space-between}
+a{color:var(--action);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* === Spinner === */
+.spinner{width:18px;height:18px;border-radius:50%;border:2px solid rgba(255,255,255,.15);border-top-color:#fff;animation:spin .8s linear infinite;display:none}
+.spinner.on{display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media (max-width:640px){.grid{grid-template-columns:1fr}}
