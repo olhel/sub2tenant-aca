@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Azure Tenant Lookup (Container App)</title>
+<style>
+  body{font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;background:#0b0f19;color:#e7ecf3;margin:0}
+  .wrap{max-width:860px;margin:4rem auto;padding:0 1rem}
+  .card{background:#121a2b;border:1px solid #26324b;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.25);padding:1.25rem}
+  h1{margin:0 0 .75rem}
+  form{display:flex;gap:.5rem;flex-wrap:wrap;margin:.75rem 0 1rem}
+  input{flex:1 1 420px;padding:.8rem .9rem;border-radius:14px;border:1px solid #2a3a5a;background:#0e1627;color:#e7ecf3}
+  button{padding:.8rem 1rem;border-radius:14px;border:1px solid #2a3a5a;background:#1a2440;color:#e7ecf3;cursor:pointer}
+  .row{display:grid;grid-template-columns:220px 1fr;gap:.5rem .85rem;align-items:center;margin:.35rem 0}
+  .k{color:#a5b0c6}.v{font-family:ui-monospace,Consolas,Menlo,monospace;word-break:break-all}
+  .muted{color:#a5b0c6}.err{color:#ffb4c0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>Azure Tenant Lookup</h1>
+    <p class="muted">Enter an Azure <b>Subscription ID</b>. The API uses <i>Managed Identity</i> to call Microsoft Graph.</p>
+    <form id="f">
+      <input id="sub" placeholder="00000000-0000-0000-0000-000000000000" required pattern="^[0-9a-fA-F-]{36}$"/>
+      <button>Lookup</button>
+    </form>
+    <div id="out"></div>
+    <div id="msg" class="muted"></div>
+  </div>
+</div>
+<script>
+const msg = (t,e)=>{const el=document.getElementById('msg'); el.textContent=t; el.className=e?'muted err':'muted'};
+document.getElementById('f').addEventListener('submit', async ev=>{
+  ev.preventDefault(); msg('Working…');
+  const s = document.getElementById('sub').value.trim();
+  try{
+    const r = await fetch(`/api/tenant?subscriptionId=${encodeURIComponent(s)}`);
+    const txt = await r.text();
+    if(!r.ok){ try{throw new Error(JSON.parse(txt).error)}catch{throw new Error(txt||`HTTP ${r.status}`)} }
+    const data = JSON.parse(txt);
+    document.getElementById('out').innerHTML =
+      `<div class="row"><div class="k">Tenant ID</div><div class="v">${data.tenantId||''}</div></div>
+       <div class="row"><div class="k">Display name</div><div class="v">${data.displayName||'(none)'}</div></div>
+       <div class="row"><div class="k">Default domain</div><div class="v">${data.defaultDomainName||'(none)'}</div></div>`;
+    msg('Done.');
+  }catch(e){ console.error(e); msg(e.message,true); }
+});
+</script>
+</body>
+</html>
