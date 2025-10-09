@@ -34,8 +34,17 @@ app.use((req, res, next) => {
 
 app.get("/api/me", (req, res) => {
   if (!req.user) return res.status(401).json({ error: "Not authenticated" });
+
   const claims = Object.fromEntries((req.user.claims || []).map(c => [c.typ, c.val]));
-  res.json({ name: claims.name || claims.upn || null, upn: claims.upn || null, oid: claims.oid || null, mode: req.user.auth_typ || "aca" });
+  const upn =
+    claims.upn ||
+    claims.preferred_username ||
+    claims.emails || // sometimes array-like; ACA flattens to string
+    null;
+
+  const name = claims.name || null;
+
+  res.json({ upn, name, oid: claims.oid || null, mode: req.user.auth_typ || "aca" });
 });
 
 

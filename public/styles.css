@@ -71,7 +71,7 @@ body{
   text-align: center;
 }
 
-/* Right "signed in" chip */
+/* Right user chip (shows UPN) */
 .chip {
   background: rgba(255, 255, 255, 0.06);
   padding: 0.4rem 0.8rem;
@@ -79,6 +79,10 @@ body{
   border-radius: 999px;
   color: var(--text-muted);
   font-size: 0.75rem;
+  max-width: 260px;            /* prevent super-long UPNs from expanding header */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Mobile adjustments */

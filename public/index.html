@@ -22,8 +22,9 @@
   <section class="card">
     <h1>Find tenant by Subscription ID</h1>
     <p class="lead">
-      Enter an Azure <b>Subscription ID</b>. The tool uses the app’s <i>Managed Identity</i> to call Microsoft Graph.
+      Enter a <b>Subscription ID</b>. The tool looks up tenantId, tenantName and defaultDomainName.
     </p>
+
 
     <form id="f" class="form" autocomplete="off">
       <input id="sub" type="text" inputmode="text" spellcheck="false"
@@ -56,13 +57,13 @@ async function fetchMe(){
     const r = await fetch('/api/me');
     if(!r.ok) throw 0;
     const me = await r.json();
-    // Prefer name, fallback to upn
-    const who = me.name || me.upn || 'signed in';
+    const who = me.upn || me.name || 'signed in';
     document.getElementById('me').textContent = who;
   }catch{
     document.getElementById('me').textContent = 'signed in';
   }
 }
+
 
 document.addEventListener('DOMContentLoaded', () => {
   $('#year').textContent = new Date().getFullYear();
@@ -98,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="k">Display name</div><div class="v">${data.displayName || '(none)'}</div>
         <div class="k">Default domain</div><div class="v">${data.defaultDomainName || '(none)'}</div>
       `;
-      msg('Done.');
+      msg(' ');
     } catch (e) {
       console.error(e);
       msg(e.message, true);
