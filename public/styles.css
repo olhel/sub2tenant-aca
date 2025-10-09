@@ -144,6 +144,19 @@ a:hover{text-decoration:underline}
 /* === Spinner === */
 .spinner{width:18px;height:18px;border-radius:50%;border:2px solid rgba(255,255,255,.15);border-top-color:#fff;animation:spin .8s linear infinite;display:none}
 .spinner.on{display:inline-block}
+
+/* Copy buttons in result rows */
+.copycell{ display:inline-flex; align-items:center; gap:.4rem }
+.copybtn{
+  display:inline-grid; place-items:center;
+  width:28px; height:28px; padding:0; margin-left:.35rem;
+  background:transparent; color:var(--text); cursor:pointer;
+  border:1px solid var(--border); border-radius:10px;
+}
+.copybtn:hover{ border-color:var(--action) }
+.copybtn:active{ transform: translateY(1px) }
+.copybtn svg{ width:15px; height:15px; opacity:.85 }
+
 @keyframes spin{to{transform:rotate(360deg)}}
 
 @media (max-width:640px){.grid{grid-template-columns:1fr}}
