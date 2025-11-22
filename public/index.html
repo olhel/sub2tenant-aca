@@ -1,172 +1,185 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Bsure · Tenant Lookup</title>
-  <link rel="icon" href="/logo.svg"/>
-  <link rel="stylesheet" href="/styles.css"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>sub2tenant · Tenant lookup</title>
+  <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-
-<header class="nav">
-  <div class="nav-inner">
-    <img src="/logo.svg" alt="Bsure logo" class="brand-logo"/>
-    <div class="brand-title">Tenant lookup</div>
-    <div id="me" class="chip" title="Signed-in user">Sign in</div>
-  </div>
-</header>
-
-<main class="wrap">
-  <section class="card">
-    <h1>Find tenant by Subscription ID</h1>
-    <p class="lead">
-      Enter a <strong>Subscription ID</strong>. The tool looks up
-      <code>tenantId</code>, <code>displayName</code> and
-      <code>defaultDomainName</code> using Azure Resource Manager and
-      Microsoft Graph.
-    </p>
-
-    <form id="lookup-form" class="lookup-form" autocomplete="off">
-      <label for="subscriptionId" class="field-label">Subscription ID</label>
-      <div class="field-row">
-        <input
-          id="subscriptionId"
-          name="subscriptionId"
-          type="text"
-          inputmode="text"
-          spellcheck="false"
-          placeholder="00000000-0000-0000-0000-000000000000"
-          class="textbox"
-        />
-        <button type="submit" class="btn primary">
-          <span id="spin" class="spinner"></span>
-          Lookup
-        </button>
-        <button type="button" id="clear-btn" class="btn ghost">Clear</button>
+  <header class="nav">
+    <div class="nav-inner">
+      <div class="brand">
+        <span class="brand-title">sub2tenant</span>
+        <span class="brand-subtitle">Tenant lookup</span>
       </div>
-      <div id="status" class="status"></div>
-    </form>
 
-    <div id="result" class="kv"></div>
-  </section>
+      <button id="me" class="chip" type="button">
+        <span class="chip-label">Sign in</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="card">
+      <h1>Find tenant by Subscription ID</h1>
+      <p class="lead">
+        Enter an <strong>Azure subscription ID</strong>. The tool looks up
+        <code>tenantId</code>, <code>displayName</code> and
+        <code>defaultDomainName</code> using Azure Resource Manager and
+        Microsoft Graph.
+      </p>
+
+      <form id="lookup-form" class="form">
+        <label class="field">
+          <span class="field-label">Subscription ID</span>
+          <input
+            id="subscriptionId"
+            name="subscriptionId"
+            class="input"
+            type="text"
+            placeholder="00000000-0000-0000-0000-000000000000"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </label>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Lookup</button>
+          <button type="button" id="clear-btn" class="btn btn-ghost">Clear</button>
+        </div>
+      </form>
+
+      <div id="status" class="status" aria-live="polite"></div>
+
+      <dl class="result">
+        <div class="result-row">
+          <dt>Tenant ID</dt>
+          <dd id="tenantId" class="mono muted">–</dd>
+        </div>
+        <div class="result-row">
+          <dt>Display name</dt>
+          <dd id="displayName" class="muted">–</dd>
+        </div>
+        <div class="result-row">
+          <dt>Default domain</dt>
+          <dd id="defaultDomain" class="mono muted">–</dd>
+        </div>
+      </dl>
+    </section>
+  </main>
 
   <footer class="footer">
-    <span>&copy; <span id="year"></span> Bsure. Internal use only.</span>
-    <a href="/" class="muted-link">Copy app URL</a>
+    <div class="footer-inner">
+      <span>© 2025 sub2tenant.com</span>
+    </div>
   </footer>
-</main>
 
-<script>
-  const $ = (sel) => document.querySelector(sel);
+  <script>
+    const meButton = document.getElementById("me");
+    const meLabel = meButton.querySelector(".chip-label");
+    const form = document.getElementById("lookup-form");
+    const subscriptionInput = document.getElementById("subscriptionId");
+    const statusEl = document.getElementById("status");
+    const clearBtn = document.getElementById("clear-btn");
 
-  function setStatus(text, isError) {
-    const el = $("#status");
-    el.textContent = text || "";
-    el.className = "status" + (isError ? " status-error" : "");
-  }
+    const tenantIdEl = document.getElementById("tenantId");
+    const displayNameEl = document.getElementById("displayName");
+    const defaultDomainEl = document.getElementById("defaultDomain");
 
-  async function initUserChip() {
-    const chip = $("#me");
+    let currentUser = null;
 
-    const setSignedOut = () => {
-      chip.textContent = "Sign in";
-      chip.title = "Sign in with Microsoft";
-      chip.style.cursor = "pointer";
-      chip.onclick = () => {
-        window.location.href =
-          "/.auth/login/aad?post_login_redirect_uri=/&prompt=select_account";
-      };
-    };
-
-    const setSignedIn = (who) => {
-      chip.textContent = who || "Signed in";
-      chip.title = "Signed-in user (click to sign out)";
-      chip.style.cursor = "pointer";
-      chip.onclick = () => {
-        window.location.href = "/.auth/logout?post_logout_redirect_uri=/";
-      };
-    };
-
-    try {
-      const r = await fetch("/api/me");
-      if (!r.ok) throw new Error("Not signed in");
-      const me = await r.json();
-      const who = me.upn || me.name || "Signed in";
-      setSignedIn(who);
-    } catch {
-      setSignedOut();
-    }
-  }
-
-  async function handleLookupSubmit(evt) {
-    evt.preventDefault();
-    const input = $("#subscriptionId");
-    const value = (input.value || "").trim();
-    if (!value) {
-      setStatus("Enter a subscription ID", true);
-      return;
+    function setStatus(message, type = "info") {
+      statusEl.textContent = message || "";
+      statusEl.className = "status " + (message ? "status-" + type : "");
     }
 
-    // Very light validation – mostly to catch obvious typos
-    const guidLike = /^[0-9a-fA-F-]{30,}$/;
-    if (!guidLike.test(value)) {
-      setStatus("That does not look like a valid subscription ID", true);
-      return;
+    function setResults({ tenantId, displayName, defaultDomain } = {}) {
+      tenantIdEl.textContent = tenantId || "–";
+      displayNameEl.textContent = displayName || "–";
+      defaultDomainEl.textContent = defaultDomain || "–";
+
+      tenantIdEl.classList.toggle("muted", !tenantId);
+      displayNameEl.classList.toggle("muted", !displayName);
+      defaultDomainEl.classList.toggle("muted", !defaultDomain);
     }
 
-    $("#spin").classList.add("on");
-    setStatus("Looking up tenant…", false);
-    $("#result").innerHTML = "";
+    async function fetchMe() {
+      try {
+        const res = await fetch("/api/me", { credentials: "include" });
+        if (!res.ok) {
+          currentUser = null;
+          meLabel.textContent = "Sign in";
+          meButton.classList.remove("chip-authenticated");
+          return;
+        }
+        const data = await res.json();
+        currentUser = data;
+        meLabel.textContent = data.userPrincipalName || data.name || "Signed in";
+        meButton.classList.add("chip-authenticated");
+      } catch {
+        currentUser = null;
+        meLabel.textContent = "Sign in";
+        meButton.classList.remove("chip-authenticated");
+      }
+    }
 
-    try {
-      const res = await fetch("/api/lookup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subscriptionId: value })
-      });
+    meButton.addEventListener("click", () => {
+      if (!currentUser) {
+        window.location.href = "/.auth/login/aad";
+      } else {
+        const url = "/.auth/logout?post_logout_redirect_uri=" + encodeURIComponent("/");
+        window.location.href = url;
+      }
+    });
 
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || "Lookup failed");
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const subscriptionId = subscriptionInput.value.trim();
+
+      if (!subscriptionId) {
+        setStatus("Please enter a subscription ID.", "error");
+        return;
       }
 
-      const data = await res.json();
+      setStatus("Looking up subscription…", "info");
+      setResults();
 
-      $("#result").innerHTML = `
-        <div class="k">Tenant ID</div><div class="v">${data.tenantId || "(none)"}</div>
-        <div class="k">Display name</div><div class="v">${data.displayName || "(none)"}</div>
-        <div class="k">Default domain</div><div class="v">${data.defaultDomainName || "(none)"}</div>
-      `;
+      try {
+        const res = await fetch("/api/lookup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ subscriptionId })
+        });
 
-      setStatus("", false);
-    } catch (e) {
-      console.error(e);
-      setStatus(e.message, true);
-    } finally {
-      $("#spin").classList.remove("on");
-    }
-  }
+        if (!res.ok) {
+          let message = "Lookup failed.";
+          try {
+            const err = await res.json();
+            if (err?.error) message = err.error;
+          } catch {}
+          if (res.status === 401) message = "You must sign in to use the lookup.";
+          throw new Error(message);
+        }
 
-  function initForm() {
-    const form = $("#lookup-form");
-    const clearBtn = $("#clear-btn");
-
-    form.addEventListener("submit", handleLookupSubmit);
+        const data = await res.json();
+        setResults(data);
+        setStatus("Lookup completed.", "success");
+      } catch (err) {
+        setResults();
+        setStatus(err.message || "Lookup failed.", "error");
+      }
+    });
 
     clearBtn.addEventListener("click", () => {
-      $("#subscriptionId").value = "";
-      $("#result").innerHTML = "";
-      setStatus("", false);
-      $("#subscriptionId").focus();
+      subscriptionInput.value = "";
+      setResults();
+      setStatus("");
+      subscriptionInput.focus();
     });
-  }
 
-  document.addEventListener("DOMContentLoaded", () => {
-    $("#year").textContent = new Date().getFullYear();
-    initUserChip();
-    initForm();
-  });
-</script>
+    fetchMe();
+  </script>
 </body>
 </html>
