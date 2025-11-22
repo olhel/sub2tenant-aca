@@ -9,89 +9,124 @@
 <body>
   <header class="nav">
     <div class="nav-inner">
-      <div class="brand">
-        <span class="brand-title">sub2tenant</span>
-        <span class="brand-subtitle">Tenant lookup</span>
-      </div>
-
-      <button id="me" class="chip" type="button">
-        <span class="chip-label">Sign in</span>
-      </button>
+      <div class="nav-left">sub2tenant.com</div>
+      <div class="nav-center">Find tenant from subscription ID</div>
+      <div class="nav-right"></div>
     </div>
   </header>
 
   <main class="wrap">
     <section class="card">
-      <h1>Find tenant by Subscription ID</h1>
-      <p class="lead">
-        Enter an <strong>Azure subscription ID</strong>. The tool looks up
-        <code>tenantId</code>, <code>displayName</code> and
-        <code>defaultDomainName</code> using Azure Resource Manager and
-        Microsoft Graph.
-      </p>
+      <div class="card-inner">
+        <h2 class="card-title">Provide an Azure subscription ID</h2>
 
-      <form id="lookup-form" class="form">
-        <label class="field">
-          <span class="field-label">Subscription ID</span>
-          <input
-            id="subscriptionId"
-            name="subscriptionId"
-            class="input"
-            type="text"
-            placeholder="00000000-0000-0000-0000-000000000000"
-            autocomplete="off"
-            spellcheck="false"
-          />
-        </label>
+        <p class="lead">
+          The tool resolves <code>tenantId</code>, <code>displayName</code> and
+          <code>defaultDomainName</code> using the Azure Resource Manager
+          <code>WWW-Authenticate</code> header and Microsoft Graph’s
+          <code>findTenantInformationByTenantId</code> endpoint. 
+        </p>
 
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary">Lookup</button>
-          <button type="button" id="clear-btn" class="btn btn-ghost">Clear</button>
-        </div>
-      </form>
+        <form id="lookup-form" class="form">
+          <div class="form-row">
+            <input
+              id="subscriptionId"
+              name="subscriptionId"
+              class="input"
+              type="text"
+              placeholder="00000000-0000-0000-0000-000000000000"
+              autocomplete="off"
+              spellcheck="false"
+              aria-label="Subscription ID"
+            />
 
-      <div id="status" class="status" aria-live="polite"></div>
+            <button type="submit" class="btn btn-primary btn-sm" id="lookup-btn">
+              Lookup
+            </button>
 
-      <dl class="result">
-        <div class="result-row">
-          <dt>Tenant ID</dt>
-          <dd id="tenantId" class="mono muted">–</dd>
+            <button
+              type="button"
+              id="clear-btn"
+              class="btn btn-ghost btn-xs form-clear"
+            >
+              Clear
+            </button>
+          </div>
+        </form>
+
+        <div id="status" class="status" aria-live="polite"></div>
+
+        <div id="results-container" class="results-hidden">
+          <dl class="result" aria-label="Lookup result">
+            <div class="result-row">
+              <dt>Tenant ID</dt>
+              <dd class="result-value">
+                <span id="tenantId" class="mono muted">–</span>
+                <button
+                  type="button"
+                  class="btn-icon copy-btn"
+                  data-copy-target="tenantId"
+                >
+                  Copy
+                </button>
+              </dd>
+            </div>
+
+            <div class="result-row">
+              <dt>Display name</dt>
+              <dd class="result-value">
+                <span id="displayName" class="muted">–</span>
+                <button
+                  type="button"
+                  class="btn-icon copy-btn"
+                  data-copy-target="displayName"
+                >
+                  Copy
+                </button>
+              </dd>
+            </div>
+
+            <div class="result-row">
+              <dt>Default domain</dt>
+              <dd class="result-value">
+                <span id="defaultDomain" class="mono muted">–</span>
+                <button
+                  type="button"
+                  class="btn-icon copy-btn"
+                  data-copy-target="defaultDomain"
+                >
+                  Copy
+                </button>
+              </dd>
+            </div>
+          </dl>
         </div>
-        <div class="result-row">
-          <dt>Display name</dt>
-          <dd id="displayName" class="muted">–</dd>
-        </div>
-        <div class="result-row">
-          <dt>Default domain</dt>
-          <dd id="defaultDomain" class="mono muted">–</dd>
-        </div>
-      </dl>
+      </div>
     </section>
   </main>
 
   <footer class="footer">
     <div class="footer-inner">
-      <span>© 2025 sub2tenant.com</span>
+      <span>© 2025 sub2tenant.com · Lookups are not logged or stored.</span>
     </div>
   </footer>
 
   <script>
-    const meButton = document.getElementById("me");
-    const meLabel = meButton.querySelector(".chip-label");
     const form = document.getElementById("lookup-form");
     const subscriptionInput = document.getElementById("subscriptionId");
     const statusEl = document.getElementById("status");
     const clearBtn = document.getElementById("clear-btn");
+    const lookupBtn = document.getElementById("lookup-btn");
+    const resultsContainer = document.getElementById("results-container");
 
     const tenantIdEl = document.getElementById("tenantId");
     const displayNameEl = document.getElementById("displayName");
     const defaultDomainEl = document.getElementById("defaultDomain");
-
-    let currentUser = null;
+    const copyButtons = document.querySelectorAll(".copy-btn");
 
     function setStatus(message, type = "info") {
       statusEl.textContent = message || "";
-      statusEl.className = "status " + (message ? "status-" + type : "");
+      statusEl.className = "status" + (message ? " status-" + type : "");
     }
 
     function setResults({ tenantId, displayName, defaultDomain } = {}) {
@@ -104,33 +139,44 @@
       defaultDomainEl.classList.toggle("muted", !defaultDomain);
     }
 
-    async function fetchMe() {
-      try {
-        const res = await fetch("/api/me", { credentials: "include" });
-        if (!res.ok) {
-          currentUser = null;
-          meLabel.textContent = "Sign in";
-          meButton.classList.remove("chip-authenticated");
-          return;
-        }
-        const data = await res.json();
-        currentUser = data;
-        meLabel.textContent = data.userPrincipalName || data.name || "Signed in";
-        meButton.classList.add("chip-authenticated");
-      } catch {
-        currentUser = null;
-        meLabel.textContent = "Sign in";
-        meButton.classList.remove("chip-authenticated");
-      }
+    function setLoading(isLoading) {
+      lookupBtn.disabled = isLoading;
+      lookupBtn.textContent = isLoading ? "Looking up…" : "Lookup";
     }
 
-    meButton.addEventListener("click", () => {
-      if (!currentUser) {
-        window.location.href = "/.auth/login/aad?post_login_redirect_uri=/";
-      } else {
-        const url = "/.auth/logout?post_logout_redirect_uri=/";
-        window.location.href = url;
-      }
+    function showResults() {
+      resultsContainer.classList.remove("results-hidden");
+      resultsContainer.classList.add("results-visible");
+    }
+
+    function hideResults() {
+      resultsContainer.classList.add("results-hidden");
+      resultsContainer.classList.remove("results-visible");
+    }
+
+    // Copy buttons
+    copyButtons.forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const targetId = btn.getAttribute("data-copy-target");
+        const targetEl = document.getElementById(targetId);
+        if (!targetEl) return;
+
+        const value = (targetEl.textContent || "").trim();
+        if (!value || value === "–") return;
+
+        try {
+          await navigator.clipboard.writeText(value);
+          const original = btn.textContent;
+          btn.classList.add("copy-btn-copied");
+          btn.textContent = "Copied";
+          setTimeout(() => {
+            btn.classList.remove("copy-btn-copied");
+            btn.textContent = original;
+          }, 1100);
+        } catch {
+          setStatus("Could not copy to clipboard.", "error");
+        }
+      });
     });
 
     form.addEventListener("submit", async (event) => {
@@ -139,18 +185,27 @@
 
       if (!subscriptionId) {
         setStatus("Please enter a subscription ID.", "error");
+        hideResults();
+        return;
+      }
+
+      const guidLike = /^[0-9a-fA-F-]{30,}$/;
+      if (!guidLike.test(subscriptionId)) {
+        setStatus("That does not look like a valid subscription ID.", "error");
+        hideResults();
         return;
       }
 
       setStatus("Looking up subscription…", "info");
       setResults();
+      setLoading(true);
+      hideResults();
 
       try {
         const res = await fetch("/api/lookup", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ subscriptionId })
+          body: JSON.stringify({ subscriptionId }),
         });
 
         if (!res.ok) {
@@ -159,16 +214,19 @@
             const err = await res.json();
             if (err?.error) message = err.error;
           } catch {}
-          if (res.status === 401) message = "You must sign in to use the lookup.";
           throw new Error(message);
         }
 
         const data = await res.json();
         setResults(data);
         setStatus("Lookup completed.", "success");
+        showResults();
       } catch (err) {
         setResults();
         setStatus(err.message || "Lookup failed.", "error");
+        hideResults();
+      } finally {
+        setLoading(false);
       }
     });
 
@@ -176,10 +234,13 @@
       subscriptionInput.value = "";
       setResults();
       setStatus("");
+      hideResults();
       subscriptionInput.focus();
     });
 
-    fetchMe();
+    // Initial empty state
+    setResults();
+    hideResults();
   </script>
 </body>
 </html>
