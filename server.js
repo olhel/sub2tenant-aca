@@ -60,6 +60,12 @@ app.use((req, _res, next) => {
 });
 
 // ---------- Helpers ----------
+function requireUser(req, res, next) {
+  if (!req.user) {
+    return res.status(401).json({ error: "Not authenticated" });
+  }
+  next();
+}
 
 // Use managed identity in ACA; DefaultAzureCredential is handy for local dev
 let credential;
@@ -144,7 +150,7 @@ app.get("/api/me", (req, res) => {
 });
 
 // Main lookup API
-app.post("/api/lookup", async (req, res) => {
+app.post("/api/lookup", requireUser, async (req, res) => {
   const subscriptionId = (req.body?.subscriptionId || "").trim();
 
   if (!subscriptionId) {
