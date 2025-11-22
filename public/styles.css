@@ -316,7 +316,7 @@ code {
 .status {
   min-height: 0.9rem;
   font-size: 0.82rem;
-  margin: 0.25rem 0 0.4rem;
+  margin: 2rem 0 0.4rem;
   color: var(--text-muted);
 }
 

@@ -3,14 +3,85 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>sub2tenant · Tenant lookup</title>
-  <link rel="stylesheet" href="/styles.css" />
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-J7FYT7CEV5"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+  gtag('js', new Date());
+  gtag('config', 'G-J7FYT7CEV5', {
+    anonymize_ip: true,
+    allow_ad_personalization_signals: false
+  });
+</script>
+
+  <!-- Title -->
+  <title>sub2tenant · Azure Subscription Tenant Lookup Tool</title>
+
+  <!-- Primary SEO -->
+  <meta name="description" content="Find the Azure Entra tenant behind any Subscription ID. sub2tenant instantly returns tenantId, displayName and defaultDomainName using secure ARM and Microsoft Graph lookups. Free, anonymous, and no sign-in required.">
+  <meta name="keywords" content="Azure subscription tenant lookup, find Azure tenant from Subscription ID, Azure Entra tenant, tenantId lookup, defaultDomainName lookup, ARM WWW-Authenticate, Microsoft Graph, MSP tools">
+  <link rel="canonical" href="https://sub2tenant.com/">
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+
+  <!-- PNG fallbacks -->
+  <link rel="alternate icon" href="/assets/icons/favicon-32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/favicon-256.png">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://sub2tenant.com/">
+  <meta property="og:title" content="sub2tenant · Azure Subscription Tenant Lookup Tool">
+  <meta property="og:description" content="Lookup Azure tenant details from any Subscription ID: tenantId, displayName and defaultDomainName. Free, anonymous, no sign-in required.">
+  <meta property="og:image" content="https://sub2tenant.com/assets/og/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://sub2tenant.com/">
+  <meta name="twitter:title" content="sub2tenant · Azure Subscription Tenant Lookup Tool">
+  <meta name="twitter:description" content="Lookup Azure tenant details from any Subscription ID: tenantId, displayName and defaultDomainName. Free, anonymous, no sign-in required.">
+  <meta name="twitter:image" content="https://sub2tenant.com/assets/og/og-image.png">
+
+  <!-- Preload OG Image -->
+  <link rel="preload" as="image" href="/assets/og/og-image.png">
+
+  <!-- Schema.org JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "sub2tenant",
+    "url": "https://sub2tenant.com/",
+    "description": "sub2tenant is a free, anonymous Azure subscription tenant lookup tool. Enter any Azure Subscription ID to discover the associated Entra tenant, including tenantId, displayName and defaultDomainName, using secure ARM and Microsoft Graph lookups.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "creator": {
+      "@type": "Organization",
+      "name": "sub2tenant.com"
+    },
+    "featureList": [
+      "Lookup Azure Entra tenant from Subscription ID",
+      "Returns tenantId, displayName and defaultDomainName",
+      "Uses ARM WWW-Authenticate header and Microsoft Graph",
+      "Free, anonymous, no user login required",
+      "No lookup data logged or stored"
+    ]
+  }
+  </script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="/styles.css">
 </head>
+
 <body>
   <header class="nav">
     <div class="nav-inner">
       <div class="nav-left">sub2tenant.com</div>
-      <div class="nav-center">Find tenant from subscription ID</div>
+      <div class="nav-center">Find tenant from Subscription ID</div>
       <div class="nav-right"></div>
     </div>
   </header>
@@ -18,13 +89,13 @@
   <main class="wrap">
     <section class="card">
       <div class="card-inner">
-        <h2 class="card-title">Provide an Azure subscription ID</h2>
+        <h2 class="card-title">Provide an Azure Subscription ID</h2>
 
         <p class="lead">
           The tool resolves <code>tenantId</code>, <code>displayName</code> and
           <code>defaultDomainName</code> using the Azure Resource Manager
           <code>WWW-Authenticate</code> header and Microsoft Graph’s
-          <code>findTenantInformationByTenantId</code> endpoint. 
+          <code>findTenantInformationByTenantId</code> endpoint.
         </p>
 
         <form id="lookup-form" class="form">
@@ -58,6 +129,22 @@
 
         <div id="results-container" class="results-hidden">
           <dl class="result" aria-label="Lookup result">
+
+            <!-- NEW: Subscription ID row -->
+            <div class="result-row">
+              <dt>Subscription ID</dt>
+              <dd class="result-value">
+                <span id="resultSubscriptionId" class="mono muted">–</span>
+                <button
+                  type="button"
+                  class="btn-icon copy-btn"
+                  data-copy-target="resultSubscriptionId"
+                >
+                  Copy
+                </button>
+              </dd>
+            </div>
+
             <div class="result-row">
               <dt>Tenant ID</dt>
               <dd class="result-value">
@@ -119,6 +206,7 @@
     const lookupBtn = document.getElementById("lookup-btn");
     const resultsContainer = document.getElementById("results-container");
 
+    const subscriptionResultEl = document.getElementById("resultSubscriptionId");
     const tenantIdEl = document.getElementById("tenantId");
     const displayNameEl = document.getElementById("displayName");
     const defaultDomainEl = document.getElementById("defaultDomain");
@@ -129,11 +217,14 @@
       statusEl.className = "status" + (message ? " status-" + type : "");
     }
 
-    function setResults({ tenantId, displayName, defaultDomain } = {}) {
+    // UPDATED: now also handles subscriptionId
+    function setResults({ subscriptionId, tenantId, displayName, defaultDomain } = {}) {
+      subscriptionResultEl.textContent = subscriptionId || "–";
       tenantIdEl.textContent = tenantId || "–";
       displayNameEl.textContent = displayName || "–";
       defaultDomainEl.textContent = defaultDomain || "–";
 
+      subscriptionResultEl.classList.toggle("muted", !subscriptionId);
       tenantIdEl.classList.toggle("muted", !tenantId);
       displayNameEl.classList.toggle("muted", !displayName);
       defaultDomainEl.classList.toggle("muted", !defaultDomain);
@@ -184,20 +275,20 @@
       const subscriptionId = subscriptionInput.value.trim();
 
       if (!subscriptionId) {
-        setStatus("Please enter a subscription ID.", "error");
+        setStatus("Please enter a Subscription ID.", "error");
         hideResults();
         return;
       }
 
       const guidLike = /^[0-9a-fA-F-]{30,}$/;
       if (!guidLike.test(subscriptionId)) {
-        setStatus("That does not look like a valid subscription ID.", "error");
+        setStatus("That does not look like a valid Subscription ID.", "error");
         hideResults();
         return;
       }
 
       setStatus("Looking up subscription…", "info");
-      setResults();
+      setResults();       // clear previous results (including subscription)
       setLoading(true);
       hideResults();
 
@@ -218,7 +309,8 @@
         }
 
         const data = await res.json();
-        setResults(data);
+        // include subscriptionId in the rendered result
+        setResults({ subscriptionId, ...data });
         setStatus("Lookup completed.", "success");
         showResults();
       } catch (err) {

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <rect width="256" height="256" rx="40" fill="#2563eb"/>
+  <text x="50%" y="54%" text-anchor="middle"
+        font-family="JetBrains Mono, DejaVu Sans Mono, monospace"
+        font-size="150" fill="#ffffff" font-weight="600"
+        dominant-baseline="middle">
+    s2t
+  </text>
+</svg>

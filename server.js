@@ -1,6 +1,6 @@
 import express from "express";
 import fetch from "node-fetch";
-import { ManagedIdentityCredential, DefaultAzureCredential } from "@azure/identity";
+import { DefaultAzureCredential } from "@azure/identity";
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -10,20 +10,16 @@ const port = process.env.PORT || 8080;
 app.use(express.static("public"));
 app.use(express.json());
 
-// ---------- CREDENTIALS ----------
-
-// In Azure Container Apps, managed identity is available.
-// Locally, DefaultAzureCredential lets you use Az CLI / VS Code login.
-let credential;
-if (
-  process.env.AZURE_CLIENT_ID ||
-  process.env.MSI_ENDPOINT ||
-  process.env.IDENTITY_ENDPOINT
-) {
-  credential = new ManagedIdentityCredential();
-} else {
-  credential = new DefaultAzureCredential();
-}
+// ---------- AZURE CREDENTIAL ----------
+//
+// Uses DefaultAzureCredential, which:
+//
+// - In Azure Container Apps: uses the managed identity
+// - Locally: uses Az CLI / VS Code / env vars
+//
+// No end-user authentication is involved – this is only
+// for the server to call ARM and Microsoft Graph.
+const credential = new DefaultAzureCredential();
 
 // ---------- HELPERS ----------
 
@@ -91,12 +87,12 @@ async function getTenantInfoFromGraph(tenantId) {
 
 // ---------- ROUTES ----------
 
-// Public health/info endpoint if you ever want it
+// Simple health/info endpoint
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
-// Public lookup – NO auth required
+// Public lookup – no user auth, just a POST with subscriptionId
 app.post("/api/lookup", async (req, res) => {
   const subscriptionId = (req.body?.subscriptionId || "").trim();
 
@@ -127,12 +123,11 @@ app.post("/api/lookup", async (req, res) => {
       tenantId,
       displayName: info.displayName || null,
       defaultDomain,
-      defaultDomainName: defaultDomain, // legacy name, if you want it
     });
   } catch (err) {
     console.error("Lookup failed:", err);
     res.status(502).json({
-      error: err.message || "Failed to look up tenant information",
+      error: "Failed to look up tenant information",
     });
   }
 });
