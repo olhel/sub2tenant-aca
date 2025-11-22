@@ -52,62 +52,45 @@
 const $ = s => document.querySelector(s);
 const msg = (t, isErr) => { const el = $('#status'); el.textContent = t || ''; el.className = 'status' + (isErr ? ' err' : '') };
 
-async function fetchMe(){
-  try{
+async function initUserChip() {
+  const chip = document.getElementById('me');
+
+  const setAsSignedOut = () => {
+    chip.textContent = 'Sign in';
+    chip.title = 'Sign in with Microsoft';
+    chip.style.cursor = 'pointer';
+    chip.onclick = () => {
+      window.location.href = '/.auth/login/aad?post_login_redirect_uri=/&prompt=select_account';
+    };
+  };
+
+  const setAsSignedIn = (who) => {
+    chip.textContent = who || 'Signed in';
+    chip.title = 'Signed-in user (click to sign out)';
+    chip.style.cursor = 'pointer';
+    chip.onclick = () => {
+      window.location.href = '/.auth/logout?post_logout_redirect_uri=/';
+    };
+  };
+
+  try {
     const r = await fetch('/api/me');
-    if(!r.ok) throw 0;
+    if (!r.ok) throw new Error('Not signed in');
+
     const me = await r.json();
-    const who = me.upn || me.name || 'signed in';
-    document.getElementById('me').textContent = who;
-  }catch{
-    document.getElementById('me').textContent = 'signed in';
+    const who = me.upn || me.name || 'Signed in';
+    setAsSignedIn(who);
+  } catch {
+    setAsSignedOut();
   }
 }
 
-
 document.addEventListener('DOMContentLoaded', () => {
   $('#year').textContent = new Date().getFullYear();
-  fetchMe();
-
-  $('#copyLink').addEventListener('click', (e)=>{
-    e.preventDefault();
-    navigator.clipboard?.writeText(location.href);
-    msg('App URL copied to clipboard.');
-    setTimeout(()=>msg(''), 1500);
-  });
-
-  $('#btnClear').addEventListener('click', ()=>{
-    $('#sub').value=''; $('#out').innerHTML=''; msg('');
-  });
-
-  $('#f').addEventListener('submit', async ev=>{
-    ev.preventDefault();
-    const s = $('#sub').value.trim();
-    $('#spin').classList.add('on');
-    msg('Looking up…');
-    $('#out').innerHTML = '';
-
-    try {
-      const r = await fetch(`/api/tenant?subscriptionId=${encodeURIComponent(s)}`);
-      const txt = await r.text();
-      if(!r.ok){
-        try{ throw new Error(JSON.parse(txt).error) }catch{ throw new Error(txt || `HTTP ${r.status}`) }
-      }
-      const data = JSON.parse(txt);
-      $('#out').innerHTML = `
-        <div class="k">Tenant ID</div><div class="v">${data.tenantId || ''}</div>
-        <div class="k">Display name</div><div class="v">${data.displayName || '(none)'}</div>
-        <div class="k">Default domain</div><div class="v">${data.defaultDomainName || '(none)'}</div>
-      `;
-      msg(' ');
-    } catch (e) {
-      console.error(e);
-      msg(e.message, true);
-    } finally {
-      $('#spin').classList.remove('on');
-    }
-  });
+  initUserChip();
+  // ... keep the rest of your existing DOMContentLoaded code (form handlers etc.)
 });
 </script>
+
 </body>
 </html>

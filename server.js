@@ -3,6 +3,7 @@ import fetch from "node-fetch";
 import os from "node:os";
 import { ManagedIdentityCredential, DefaultAzureCredential } from "@azure/identity";
 
+const IS_LOCAL_DEV = process.env.LOCAL_DEV === "true";
 const app = express();
 const port = process.env.PORT || 8080;
 
@@ -10,25 +11,30 @@ app.use(express.static("public"));
 
 // --- User info: ACA header in prod; friendly fallback in local dev ---
 app.use((req, res, next) => {
-  const raw = req.headers['x-ms-client-principal']; // present only behind ACA auth
+  const raw = req.headers["x-ms-client-principal"]; // present only behind ACA auth
+
   if (raw) {
     try {
-      req.user = JSON.parse(Buffer.from(raw, 'base64').toString('utf8'));
-    } catch { /* ignore parse errors */ }
-} else if (process.env.NODE_ENV !== 'production') {
-  // Local dev fallback (no ACA header)
-  const osUser = os.userInfo().username;
-  const name = process.env.LOCAL_USER_NAME || osUser;
-  const upn  = process.env.LOCAL_USER_UPN  || `${osUser}@local.dev`;
-  req.user = {
-    auth_typ: "local-dev",
-    claims: [
-      { typ: "name", val: name },
-      { typ: "upn",  val: upn  },
-      { typ: "oid",  val: "00000000-0000-0000-0000-000000000000" }
-    ]
-  };
-}
+      req.user = JSON.parse(Buffer.from(raw, "base64").toString("utf8"));
+      req.user.auth_typ = req.user.auth_typ || "aca";
+    } catch {
+      // ignore parse errors
+    }
+  } else if (IS_LOCAL_DEV) {
+    // Local dev fallback (no ACA header)
+    const osUser = os.userInfo().username;
+    const name = process.env.LOCAL_USER_NAME || osUser;
+    const upn  = process.env.LOCAL_USER_UPN  || `${osUser}@local.dev`;
+    req.user = {
+      auth_typ: "local-dev",
+      claims: [
+        { typ: "name", val: name },
+        { typ: "upn",  val: upn  },
+        { typ: "oid",  val: "00000000-0000-0000-0000-000000000000" }
+      ]
+    };
+  }
+
   next();
 });
 
