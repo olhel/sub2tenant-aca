@@ -169,11 +169,19 @@ app.post("/api/lookup", requireUser, async (req, res) => {
     const tenantId = await getTenantIdFromSubscription(subscriptionId);
     const info = await getTenantInfoFromGraph(tenantId);
 
-    res.json({
-      tenantId,
-      displayName: info.displayName || null,
-      defaultDomainName: info.defaultDomainName || null,
-    });
+// Build a reliable defaultDomain value
+const verified = info.verifiedDomains || [];
+const defaultDomain =
+  info.defaultDomainName ||
+  (verified.find(d => d.isDefault) || verified.find(d => d.isInitial) || {}).name ||
+  null;
+
+res.json({
+  tenantId,
+  displayName: info.displayName || null,
+  defaultDomain,           // <- frontend expects this name
+  defaultDomainName: defaultDomain // (optional, keeps backwards compat)
+});
   } catch (err) {
     console.error("Lookup failed:", err);
     res.status(502).json({

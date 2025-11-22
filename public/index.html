@@ -126,9 +126,9 @@
 
     meButton.addEventListener("click", () => {
       if (!currentUser) {
-        window.location.href = "/.auth/login/aad";
+        window.location.href = "/.auth/login/aad?post_login_redirect_uri=/";
       } else {
-        const url = "/.auth/logout?post_logout_redirect_uri=" + encodeURIComponent("/");
+        const url = "/.auth/logout?post_logout_redirect_uri=/";
         window.location.href = url;
       }
     });

@@ -16,6 +16,8 @@
   --transition-fast: 150ms ease-out;
 }
 
+/* RESET / BASE */
+
 *,
 *::before,
 *::after {
@@ -79,7 +81,7 @@ body {
   color: var(--text-muted);
 }
 
-/* CHIP */
+/* SIGN-IN CHIP */
 
 .chip {
   border: 1px solid rgba(148, 163, 184, 0.35);
@@ -321,17 +323,6 @@ code {
   font-size: 0.78rem;
   color: var(--text-muted);
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-}
-
-.footer-link {
-  color: var(--text-muted);
-  text-decoration: none;
-  border-bottom: 1px dotted rgba(148, 163, 184, 0.7);
-}
-
-.footer-link:hover {
-  color: var(--text-main);
-  border-bottom-style: solid;
 }
