@@ -1,116 +1,183 @@
 import express from "express";
 import fetch from "node-fetch";
-import os from "node:os";
 import { ManagedIdentityCredential, DefaultAzureCredential } from "@azure/identity";
 
-const IS_LOCAL_DEV = process.env.LOCAL_DEV === "true";
 const app = express();
 const port = process.env.PORT || 8080;
 
+// ---------- Middleware ----------
+
+// Serve static files from /public
 app.use(express.static("public"));
 
-// --- User info: ACA header in prod; friendly fallback in local dev ---
-app.use((req, res, next) => {
-  const raw = req.headers["x-ms-client-principal"]; // present only behind ACA auth
+// Parse JSON bodies
+app.use(express.json());
 
-  if (raw) {
-    try {
-      req.user = JSON.parse(Buffer.from(raw, "base64").toString("utf8"));
-      req.user.auth_typ = req.user.auth_typ || "aca";
-    } catch {
-      // ignore parse errors
-    }
-  } else if (IS_LOCAL_DEV) {
-    // Local dev fallback (no ACA header)
-    const osUser = os.userInfo().username;
-    const name = process.env.LOCAL_USER_NAME || osUser;
-    const upn  = process.env.LOCAL_USER_UPN  || `${osUser}@local.dev`;
+// Extract authenticated user from EasyAuth header (if present)
+app.use((req, _res, next) => {
+  const raw = req.headers["x-ms-client-principal"];
+  if (!raw) {
+    return next();
+  }
+
+  try {
+    const decoded = JSON.parse(
+      Buffer.from(raw, "base64").toString("utf8")
+    );
+
+    const claims = decoded.claims || [];
+
+    const getClaim = (type) =>
+      claims.find((c) => c.typ === type)?.val;
+
+    const name =
+      getClaim("name") ||
+      getClaim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name");
+
+    const upn =
+      getClaim("upn") ||
+      getClaim(
+        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/upn"
+      ) ||
+      getClaim("preferred_username");
+
+    const oid = getClaim("oid");
+    const tid = getClaim("tid");
+
     req.user = {
-      auth_typ: "local-dev",
-      claims: [
-        { typ: "name", val: name },
-        { typ: "upn",  val: upn  },
-        { typ: "oid",  val: "00000000-0000-0000-0000-000000000000" }
-      ]
+      name: name || null,
+      upn: upn || null,
+      oid: oid || null,
+      tid: tid || null,
+      authType: decoded.auth_typ || "aad",
     };
+  } catch {
+    // If parsing fails we just treat the request as anonymous
+    req.user = undefined;
   }
 
   next();
 });
 
-app.get("/api/me", (req, res) => {
-  if (!req.user) return res.status(401).json({ error: "Not authenticated" });
+// ---------- Helpers ----------
 
-  const claims = Object.fromEntries((req.user.claims || []).map(c => [c.typ, c.val]));
-  const upn =
-    claims.upn ||
-    claims.preferred_username ||
-    claims.emails || // sometimes array-like; ACA flattens to string
-    null;
-
-  const name = claims.name || null;
-
-  res.json({ upn, name, oid: claims.oid || null, mode: req.user.auth_typ || "aca" });
-});
-
-
-
-async function getGraphToken(log = console) {
-  try {
-    const mi = new ManagedIdentityCredential();
-    const tok = await mi.getToken("https://graph.microsoft.com/.default");
-    log.log("[MI] token OK");
-    return tok.token;
-  } catch (e1) {
-    log.warn("[MI] failed:", e1.message);
-    try {
-      const dac = new DefaultAzureCredential();
-      const { token } = await dac.getToken("https://graph.microsoft.com/.default");
-      log.log("[DAC] token OK");
-      return token;
-    } catch (e2) {
-      log.error("[DAC] failed:", e2.message);
-      throw new Error(`No Azure credential available. MI err: ${e1.message}`);
-    }
-  }
+// Use managed identity in ACA; DefaultAzureCredential is handy for local dev
+let credential;
+if (
+  process.env.AZURE_CLIENT_ID ||
+  process.env.MSI_ENDPOINT ||
+  process.env.IDENTITY_ENDPOINT
+) {
+  credential = new ManagedIdentityCredential();
+} else {
+  credential = new DefaultAzureCredential();
 }
 
-app.get("/api/tenant", async (req, res) => {
-  const subscriptionId = (req.query.subscriptionId || "").trim();
-  if (!/^[0-9a-fA-F-]{36}$/.test(subscriptionId)) {
-    res.status(400).json({ error: "Invalid subscriptionId format." });
-    return;
+async function getTenantIdFromSubscription(subscriptionId) {
+  const url =
+    "https://management.azure.com/subscriptions/" +
+    encodeURIComponent(subscriptionId) +
+    "?api-version=2020-01-01";
+
+  // Intentionally call ARM *without* auth; we expect 401 with a WWW-Authenticate header
+  const r = await fetch(url);
+  if (r.status !== 401) {
+    throw new Error(
+      `Unexpected response from ARM (${r.status}) while resolving tenantId`
+    );
+  }
+
+  const authHeader = r.headers.get("www-authenticate") || "";
+  const match =
+    authHeader.match(
+      /authorization_uri=\"https:\/\/login\.windows\.net\/([0-9a-fA-F-]+)\"/i
+    ) ||
+    authHeader.match(
+      /authorization_uri=\"https:\/\/login\.microsoftonline\.com\/([0-9a-fA-F-]+)\"/i
+    );
+
+  if (!match) {
+    throw new Error("Could not parse tenantId from ARM WWW-Authenticate header");
+  }
+
+  return match[1];
+}
+
+async function getTenantInfoFromGraph(tenantId) {
+  const scope = "https://graph.microsoft.com/.default";
+  const token = await credential.getToken(scope);
+
+  if (!token || !token.token) {
+    throw new Error("Failed to obtain access token for Microsoft Graph");
+  }
+
+  const url =
+    "https://graph.microsoft.com/v1.0/tenantRelationships/findTenantInformationByTenantId(tenantId='" +
+    tenantId +
+    "')";
+
+  const r = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token.token}`,
+      Accept: "application/json",
+    },
+  });
+
+  if (!r.ok) {
+    const body = await r.text();
+    throw new Error(
+      `Graph call failed (${r.status}): ${body || r.statusText}`
+    );
+  }
+
+  return r.json();
+}
+
+// ---------- Routes ----------
+
+// Who am I
+app.get("/api/me", (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ error: "Not authenticated" });
+  }
+  res.json(req.user);
+});
+
+// Main lookup API
+app.post("/api/lookup", async (req, res) => {
+  const subscriptionId = (req.body?.subscriptionId || "").trim();
+
+  if (!subscriptionId) {
+    return res.status(400).json({ error: "subscriptionId is required" });
+  }
+
+  // Simple GUID-ish validation – mainly to catch obvious typos
+  const guidLike = /^[0-9a-fA-F-]{30,}$/;
+  if (!guidLike.test(subscriptionId)) {
+    return res
+      .status(400)
+      .json({ error: "subscriptionId does not look like a valid GUID" });
   }
 
   try {
-    const armUrl = `https://management.azure.com/subscriptions/${subscriptionId}?api-version=2022-12-01`;
-    const arm = await fetch(armUrl, { method: "GET" });
-    const wa = arm.headers.get("www-authenticate") || "";
-    const m = wa.match(/authorization_uri="([^"]+)"/i);
-    if (!m) throw new Error("authorization_uri not found in ARM response.");
-    const authUri = m[1];
-    const guid = authUri.match(/[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}/);
-    if (!guid) throw new Error("Tenant GUID not found in authorization_uri.");
-    const tenantId = guid[0];
-
-    const token = await getGraphToken(console);
-    const graphUrl = `https://graph.microsoft.com/v1.0/tenantRelationships/findTenantInformationByTenantId(tenantId='${tenantId}')`;
-    const g = await fetch(graphUrl, { headers: { Authorization: `Bearer ${token}` } });
-    if (!g.ok) {
-      const t = await g.text();
-      throw new Error(`Graph error ${g.status}: ${t}`);
-    }
-    const info = await g.json();
+    const tenantId = await getTenantIdFromSubscription(subscriptionId);
+    const info = await getTenantInfoFromGraph(tenantId);
 
     res.json({
       tenantId,
       displayName: info.displayName || null,
-      defaultDomainName: info.defaultDomainName || null
+      defaultDomainName: info.defaultDomainName || null,
     });
-  } catch (e) {
-    console.error(e);
-    res.status(502).json({ error: e.message });
+  } catch (err) {
+    console.error("Lookup failed:", err);
+    res.status(502).json({
+      error: err.message || "Failed to look up tenant information",
+    });
   }
 });
 
-app.listen(port, () => console.log(`Listening on ${port}`));
+// ---------- Start ----------
+
+app.listen(port, () => {
+  console.log(`Listening on ${port}`);
+});

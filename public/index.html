@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Bsure · Tenant Lookup</title>
-<link rel="icon" href="/logo.svg"/>
-<link rel="stylesheet" href="/styles.css"/>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Bsure · Tenant Lookup</title>
+  <link rel="icon" href="/logo.svg"/>
+  <link rel="stylesheet" href="/styles.css"/>
 </head>
 <body>
 
@@ -13,84 +13,160 @@
   <div class="nav-inner">
     <img src="/logo.svg" alt="Bsure logo" class="brand-logo"/>
     <div class="brand-title">Tenant lookup</div>
-    <div id="me" class="chip" title="Signed-in user">signed in</div>
+    <div id="me" class="chip" title="Signed-in user">Sign in</div>
   </div>
 </header>
-
 
 <main class="wrap">
   <section class="card">
     <h1>Find tenant by Subscription ID</h1>
     <p class="lead">
-      Enter a <b>Subscription ID</b>. The tool looks up tenantId, tenantName and defaultDomainName.
+      Enter a <strong>Subscription ID</strong>. The tool looks up
+      <code>tenantId</code>, <code>displayName</code> and
+      <code>defaultDomainName</code> using Azure Resource Manager and
+      Microsoft Graph.
     </p>
 
-
-    <form id="f" class="form" autocomplete="off">
-      <input id="sub" type="text" inputmode="text" spellcheck="false"
-        placeholder="00000000-0000-0000-0000-000000000000"
-        required pattern="^[0-9a-fA-F-]{36}$" aria-label="Azure Subscription ID"/>
-      <div class="btn-row">
-        <button id="btnLookup" type="submit">Lookup</button>
-        <div id="spin" class="spinner" aria-hidden="true"></div>
-        <button id="btnClear" type="button" class="secondary">Clear</button>
+    <form id="lookup-form" class="lookup-form" autocomplete="off">
+      <label for="subscriptionId" class="field-label">Subscription ID</label>
+      <div class="field-row">
+        <input
+          id="subscriptionId"
+          name="subscriptionId"
+          type="text"
+          inputmode="text"
+          spellcheck="false"
+          placeholder="00000000-0000-0000-0000-000000000000"
+          class="textbox"
+        />
+        <button type="submit" class="btn primary">
+          <span id="spin" class="spinner"></span>
+          Lookup
+        </button>
+        <button type="button" id="clear-btn" class="btn ghost">Clear</button>
       </div>
+      <div id="status" class="status"></div>
     </form>
 
-    <div id="status" class="status"></div>
-
-    <div id="out" class="grid" aria-live="polite"></div>
+    <div id="result" class="kv"></div>
   </section>
+
+  <footer class="footer">
+    <span>&copy; <span id="year"></span> Bsure. Internal use only.</span>
+    <a href="/" class="muted-link">Copy app URL</a>
+  </footer>
 </main>
 
-<footer class="footer">
-  <div>&copy; <span id="year"></span> <span style="font-weight:600">Bsure</span>. Internal use only.</div>
-  <div><a href="#" id="copyLink">Copy app URL</a></div>
-</footer>
-
 <script>
-const $ = s => document.querySelector(s);
-const msg = (t, isErr) => { const el = $('#status'); el.textContent = t || ''; el.className = 'status' + (isErr ? ' err' : '') };
+  const $ = (sel) => document.querySelector(sel);
 
-async function initUserChip() {
-  const chip = document.getElementById('me');
-
-  const setAsSignedOut = () => {
-    chip.textContent = 'Sign in';
-    chip.title = 'Sign in with Microsoft';
-    chip.style.cursor = 'pointer';
-    chip.onclick = () => {
-      window.location.href = '/.auth/login/aad?post_login_redirect_uri=/&prompt=select_account';
-    };
-  };
-
-  const setAsSignedIn = (who) => {
-    chip.textContent = who || 'Signed in';
-    chip.title = 'Signed-in user (click to sign out)';
-    chip.style.cursor = 'pointer';
-    chip.onclick = () => {
-      window.location.href = '/.auth/logout?post_logout_redirect_uri=/';
-    };
-  };
-
-  try {
-    const r = await fetch('/api/me');
-    if (!r.ok) throw new Error('Not signed in');
-
-    const me = await r.json();
-    const who = me.upn || me.name || 'Signed in';
-    setAsSignedIn(who);
-  } catch {
-    setAsSignedOut();
+  function setStatus(text, isError) {
+    const el = $("#status");
+    el.textContent = text || "";
+    el.className = "status" + (isError ? " status-error" : "");
   }
-}
 
-document.addEventListener('DOMContentLoaded', () => {
-  $('#year').textContent = new Date().getFullYear();
-  initUserChip();
-  // ... keep the rest of your existing DOMContentLoaded code (form handlers etc.)
-});
+  async function initUserChip() {
+    const chip = $("#me");
+
+    const setSignedOut = () => {
+      chip.textContent = "Sign in";
+      chip.title = "Sign in with Microsoft";
+      chip.style.cursor = "pointer";
+      chip.onclick = () => {
+        window.location.href =
+          "/.auth/login/aad?post_login_redirect_uri=/&prompt=select_account";
+      };
+    };
+
+    const setSignedIn = (who) => {
+      chip.textContent = who || "Signed in";
+      chip.title = "Signed-in user (click to sign out)";
+      chip.style.cursor = "pointer";
+      chip.onclick = () => {
+        window.location.href = "/.auth/logout?post_logout_redirect_uri=/";
+      };
+    };
+
+    try {
+      const r = await fetch("/api/me");
+      if (!r.ok) throw new Error("Not signed in");
+      const me = await r.json();
+      const who = me.upn || me.name || "Signed in";
+      setSignedIn(who);
+    } catch {
+      setSignedOut();
+    }
+  }
+
+  async function handleLookupSubmit(evt) {
+    evt.preventDefault();
+    const input = $("#subscriptionId");
+    const value = (input.value || "").trim();
+    if (!value) {
+      setStatus("Enter a subscription ID", true);
+      return;
+    }
+
+    // Very light validation – mostly to catch obvious typos
+    const guidLike = /^[0-9a-fA-F-]{30,}$/;
+    if (!guidLike.test(value)) {
+      setStatus("That does not look like a valid subscription ID", true);
+      return;
+    }
+
+    $("#spin").classList.add("on");
+    setStatus("Looking up tenant…", false);
+    $("#result").innerHTML = "";
+
+    try {
+      const res = await fetch("/api/lookup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subscriptionId: value })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Lookup failed");
+      }
+
+      const data = await res.json();
+
+      $("#result").innerHTML = `
+        <div class="k">Tenant ID</div><div class="v">${data.tenantId || "(none)"}</div>
+        <div class="k">Display name</div><div class="v">${data.displayName || "(none)"}</div>
+        <div class="k">Default domain</div><div class="v">${data.defaultDomainName || "(none)"}</div>
+      `;
+
+      setStatus("", false);
+    } catch (e) {
+      console.error(e);
+      setStatus(e.message, true);
+    } finally {
+      $("#spin").classList.remove("on");
+    }
+  }
+
+  function initForm() {
+    const form = $("#lookup-form");
+    const clearBtn = $("#clear-btn");
+
+    form.addEventListener("submit", handleLookupSubmit);
+
+    clearBtn.addEventListener("click", () => {
+      $("#subscriptionId").value = "";
+      $("#result").innerHTML = "";
+      setStatus("", false);
+      $("#subscriptionId").focus();
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    $("#year").textContent = new Date().getFullYear();
+    initUserChip();
+    initForm();
+  });
 </script>
-
 </body>
 </html>
