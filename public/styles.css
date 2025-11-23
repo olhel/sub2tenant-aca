@@ -36,6 +36,7 @@ body {
   color: var(--text-main);
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
 }
 
 /* NAVBAR */
@@ -89,7 +90,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 3.4rem 1.5rem 2.2rem; /* pushes card a bit lower */
+  padding: 5rem 1.5rem 2.2rem; /* pushes card a bit lower */
 }
 
 .card {
@@ -423,4 +424,35 @@ kbd {
   font-family: inherit;
   background: rgba(15, 23, 42, 0.8);
   color: var(--text-muted);
+}
+
+/* Support block (Buy me a beer) */
+.support-block {
+  margin: auto auto 4rem;  /* top: auto, sides: auto, bottom: 4rem */
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+
+.support-block p {
+  margin-bottom: 0.75rem;
+  color: var(--text-muted);
+}
+
+.support-btn {
+  display: inline-block;
+  background: #2563eb;
+  color: #ffffff;
+  padding: 0.5rem 1.2rem;
+  border-radius: 0.8rem;
+  text-decoration: none;
+  font-size: 0.92rem;
+  transition: opacity 0.25s ease, box-shadow 0.25s ease;
+  box-shadow: 0 0 12px rgba(37, 99, 235, 0.25);
+}
+
+.support-btn:hover {
+  opacity: 0.85;
+  box-shadow: 0 0 18px rgba(37, 99, 235, 0.40);
 }
