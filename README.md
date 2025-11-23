@@ -1,80 +1,63 @@
-# sub2tenant --- Identify the Tenant Behind Any Azure Subscription ID
+# sub2tenant -- Identify the Tenant Behind an Azure Subscription ID
 
-**sub2tenant** is a small, transparent, privacy‑focused tool that maps
-an **Azure Subscription ID → its Azure AD / Entra ID tenant**.
+sub2tenant maps an **Azure Subscription ID** to its **Azure AD / Entra
+ID tenant**.
 
-This repository exists so that anyone can inspect the code and
-understand exactly what the service does --- and what it *does not* do.
+The public site is available at **https://sub2tenant.com**.\
+This repository contains the source code so anyone can see how the
+service works.
 
-------------------------------------------------------------------------
+## What the Service Does
 
-## ⭐ What the Service Does
-
--   Extracts the **tenant ID** from Azure Resource Manager's
-    `WWW-Authenticate` header\
-    (no authentication required).
--   Uses a **Managed Identity** to call Microsoft Graph\
-    (`findTenantInformationByTenantId`) and retrieve:
+-   Reads the tenant ID from Azure Resource Manager's `WWW-Authenticate`
+    header\
+    (no authentication required)
+-   Calls Microsoft Graph with a Managed Identity and retrieves:
     -   `tenantId`
     -   `displayName`
     -   `defaultDomainName`
--   Returns only those fields to the client.
--   Performs no caching, no analytics, and no storage.
+-   Returns only these fields to the client
+-   Does not store or log any lookup data
 
-------------------------------------------------------------------------
+## Privacy and Security
 
-## 🔐 Privacy & Security
+-   Subscription IDs, tenant IDs and domains are not logged\
+-   No data is written to disk\
+-   No secrets are used since the backend relies on a Managed Identity\
+-   Only the Graph permission **CrossTenantInformation.ReadBasic.All**
+    is used\
+-   No user authentication is required
 
--   The service **does not log** subscription IDs, tenant IDs, or domain
-    names.
--   No data is persisted or written to disk.
--   No secrets exist in the codebase --- the backend uses a **Managed
-    Identity**.
--   The Graph permission used is
-    **CrossTenantInformation.ReadBasic.All**, which exposes only basic
-    public tenant metadata.
--   No end‑user authentication or tokens are ever requested.
-
-This repo is intentionally simple so anyone can verify the behavior.
-
-------------------------------------------------------------------------
-
-## 📌 High‑Level Technical Overview
+## How It Works
 
 1.  The service sends:
 
         GET https://management.azure.com/subscriptions/{id}?api-version=2020-01-01
 
-    ARM replies with **401** and includes the tenant ID in the
+    ARM responds with a 401 and includes the tenant ID in the
     `WWW-Authenticate` header.
 
-2.  The backend extracts that tenant ID.
+2.  The backend extracts the tenant ID.
 
-3.  It then calls:
+3.  The backend calls:
 
         GET https://graph.microsoft.com/v1.0/tenantRelationships/findTenantInformationByTenantId(...)
 
     using a Managed Identity.
 
-4.  The response is reduced to the minimal set of fields needed and
-    returned to the user.
+4.  The response is trimmed to the minimal required fields and returned.
 
-------------------------------------------------------------------------
-
-## 🧱 Project Structure
+## Project Structure
 
     sub2tenant/
-      server.js            # Backend logic
-      public/              # Static HTML/CSS UI
+      server.js
+      public/
       Dockerfile
       package.json
       package-lock.json
       .gitignore
       .dockerignore
 
-------------------------------------------------------------------------
+## License
 
-## 📝 License
-
-This project is licensed under the **MIT License**.\
-See the `LICENSE` file for details.
+MIT License. See the `LICENSE` file.
