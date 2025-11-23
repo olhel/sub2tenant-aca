@@ -3,17 +3,17 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-<!-- Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-J7FYT7CEV5"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){ dataLayer.push(arguments); }
-  gtag('js', new Date());
-  gtag('config', 'G-J7FYT7CEV5', {
-    anonymize_ip: true,
-    allow_ad_personalization_signals: false
-  });
-</script>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-J7FYT7CEV5"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-J7FYT7CEV5', {
+      anonymize_ip: true,
+      allow_ad_personalization_signals: false
+    });
+  </script>
 
   <!-- Title -->
   <title>sub2tenant · Azure Subscription Tenant Lookup Tool</title>
@@ -80,8 +80,10 @@
 <body>
   <header class="nav">
     <div class="nav-inner">
-      <div class="nav-left"></div>
-      <div class="nav-center">Find tenant from Subscription ID</div>
+      <div class="nav-left">
+        <a href="/" class="brand-link">sub2tenant.com</a>
+      </div>
+      <div class="nav-center"></div>
       <div class="nav-right"></div>
     </div>
   </header>
@@ -111,14 +113,18 @@
               aria-label="Subscription ID"
             />
 
-            <button type="submit" class="btn btn-primary btn-sm" id="lookup-btn">
+            <button
+              type="submit"
+              class="btn btn-primary btn-sm"
+              id="lookup-btn"
+            >
               Lookup
             </button>
 
             <button
               type="button"
               id="clear-btn"
-              class="btn btn-ghost btn-xs form-clear"
+              class="btn btn-secondary btn-sm form-clear"
             >
               Clear
             </button>
@@ -130,7 +136,7 @@
         <div id="results-container" class="results-hidden">
           <dl class="result" aria-label="Lookup result">
 
-            <!-- NEW: Subscription ID row -->
+            <!-- Subscription ID row -->
             <div class="result-row">
               <dt>Subscription ID</dt>
               <dd class="result-value">
@@ -190,13 +196,17 @@
         </div>
       </div>
     </section>
+
     <div class="support-block">
       <p>If this tool was useful, you can help keep the server alive:</p>
-      <a href="https://buymeacoffee.com/olhel" target="_blank" class="support-btn">
+      <a
+        href="https://buymeacoffee.com/olhel"
+        target="_blank"
+        class="btn btn-primary btn-sm support-btn"
+      >
         Buy me a beer 🍺
       </a>
     </div>
-
   </main>
 
   <footer class="footer">
@@ -224,7 +234,6 @@
       statusEl.className = "status" + (message ? " status-" + type : "");
     }
 
-    // UPDATED: now also handles subscriptionId
     function setResults({ subscriptionId, tenantId, displayName, defaultDomain } = {}) {
       subscriptionResultEl.textContent = subscriptionId || "–";
       tenantIdEl.textContent = tenantId || "–";
@@ -295,7 +304,7 @@
       }
 
       setStatus("Looking up subscription…", "info");
-      setResults();       // clear previous results (including subscription)
+      setResults();
       setLoading(true);
       hideResults();
 
@@ -316,7 +325,6 @@
         }
 
         const data = await res.json();
-        // include subscriptionId in the rendered result
         setResults({ subscriptionId, ...data });
         setStatus("Lookup completed.", "success");
         showResults();
