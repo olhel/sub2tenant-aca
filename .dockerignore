@@ -1,10 +1,8 @@
-# ignore local dependencies and clutter
 node_modules
 npm-debug.log
 Dockerfile
-.dockerignore
 .git
 .gitignore
-README.md
-.vscode
+.env
 *.log
+dist

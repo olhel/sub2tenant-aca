@@ -100,12 +100,15 @@ app.post("/api/lookup", async (req, res) => {
     return res.status(400).json({ error: "subscriptionId is required" });
   }
 
-  const guidLike = /^[0-9a-fA-F-]{30,}$/;
-  if (!guidLike.test(subscriptionId)) {
-    return res
-      .status(400)
-      .json({ error: "subscriptionId does not look like a valid GUID" });
-  }
+const guid =
+  /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+
+if (!guid.test(subscriptionId)) {
+  return res
+    .status(400)
+    .json({ error: "subscriptionId does not look like a valid GUID" });
+}
+
 
   try {
     const tenantId = await getTenantIdFromSubscription(subscriptionId);
@@ -125,7 +128,7 @@ app.post("/api/lookup", async (req, res) => {
       defaultDomain,
     });
   } catch (err) {
-    console.error("Lookup failed:", err);
+    console.error("Lookup failed:", err.message);
     res.status(502).json({
       error: "Failed to look up tenant information",
     });
