@@ -167,12 +167,12 @@ body {
 code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     "Courier New", monospace;
-  font-size: 0.85em;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  color: rgba(230, 235, 245, 0.9);
-  padding: 2px 6px;
-  border-radius: 6px;
+  font-size: 0.83em;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-muted);
+  padding: 0.12rem 0.35rem;
+  border-radius: 4px;
   backdrop-filter: blur(2px);
 }
 
@@ -216,14 +216,12 @@ code {
 }
 
 .input:focus {
-  border-color: transparent;
+  border-color: #3b82f6; /* softer blue */
   background: rgba(15, 23, 42, 0.9);
   outline: none;
-  box-shadow:
-    0 0 0 2px rgba(37, 99, 235, 0.85),
-    0 0 18px rgba(37, 99, 235, 0.55);
-  transform: translateY(-1px);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25); /* subtle clean ring */
 }
+
 
 /* BUTTONS – unified system */
 
@@ -502,12 +500,27 @@ kbd {
 }
 
 
-/* Just spacing tweaks for the CTA at the bottom */
 .support-btn {
-  box-shadow: 0 0 12px rgba(37, 99, 235, 0.25);
+  color: rgba(229, 240, 255, 0.88);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.28); /* same as .btn-primary */
+  opacity: 1; /* remove dimming */
   text-decoration: none;
 }
 
 .support-btn:hover {
-  box-shadow: 0 0 18px rgba(37, 99, 235, 0.4);
+  box-shadow: 0 0 10px rgba(37, 99, 235, 0.25); /* still subtle */
+  opacity: 1;
+}
+
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
