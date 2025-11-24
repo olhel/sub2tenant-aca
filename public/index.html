@@ -96,7 +96,10 @@
           This tool resolves <code>tenantId</code>, <code>displayName</code> and
           <code>defaultDomainName</code> for an Azure Subscription ID using the Azure Resource Manager
           <code>WWW-Authenticate</code> header and Microsoft Graph’s
-          <code>findTenantInformationByTenantId</code> endpoint.
+          <code>tenantRelationships</code> API.<br> 
+            <span style="display: block; margin-top: 0.65rem;">
+              It also supports direct tenant lookups using a tenant ID or domain name.
+            </span>
         </p>
 
         <form id="lookup-form" class="form">
@@ -106,7 +109,7 @@
               name="subscriptionId"
               class="input"
               type="text"
-              placeholder="00000000-0000-0000-0000-000000000000"
+              placeholder="Subscription ID, tenant ID, or domain name"
               autocomplete="off"
               spellcheck="false"
               aria-label="Subscription ID"
@@ -136,7 +139,7 @@
           <dl class="result" aria-label="Lookup result">
 
             <!-- Subscription ID row -->
-            <div class="result-row">
+            <div class="result-row" id="subscriptionRow">
               <dt>Subscription ID</dt>
               <dd class="result-value">
                 <span id="resultSubscriptionId" class="mono muted">–</span>
@@ -224,6 +227,7 @@
   </footer>
 
   <script>
+    const subscriptionRowEl = document.getElementById("subscriptionRow");
     const form = document.getElementById("lookup-form");
     const subscriptionInput = document.getElementById("subscriptionId");
     const statusEl = document.getElementById("status");
@@ -242,7 +246,14 @@
       statusEl.className = "status" + (message ? " status-" + type : "");
     }
 
-    function setResults({ subscriptionId, tenantId, displayName, defaultDomain } = {}) {
+    function setResults({ subscriptionId, tenantId, displayName, defaultDomain, mode } = {}) {
+      // Show/hide subscription row
+      if (mode === "tenantId" || mode === "domain") {
+        subscriptionRowEl.style.display = "none";
+      } else {
+        subscriptionRowEl.style.display = "";
+      }
+
       subscriptionResultEl.textContent = subscriptionId || "–";
       tenantIdEl.textContent = tenantId || "–";
       displayNameEl.textContent = displayName || "–";
@@ -295,55 +306,67 @@
     });
 
     form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      const subscriptionId = subscriptionInput.value.trim();
+  event.preventDefault();
+  const input = subscriptionInput.value.trim();
 
-      if (!subscriptionId) {
-        setStatus("Please enter a Subscription ID.", "error");
-        hideResults();
-        return;
-      }
+  if (!input) {
+    setStatus(
+      "Please enter a subscription ID, tenant ID, or domain name.",
+      "error"
+    );
+    hideResults();
+    return;
+  }
 
-      const guidLike = /^[0-9a-fA-F-]{30,}$/;
-      if (!guidLike.test(subscriptionId)) {
-        setStatus("That does not look like a valid Subscription ID.", "error");
-        hideResults();
-        return;
-      }
+  setStatus("Looking up…", "info");
+  setResults();
+  setLoading(true);
+  hideResults();
 
-      setStatus("Looking up subscription…", "info");
-      setResults();
-      setLoading(true);
-      hideResults();
-
-      try {
-        const res = await fetch("/api/lookup", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ subscriptionId }),
-        });
-
-        if (!res.ok) {
-          let message = "Lookup failed.";
-          try {
-            const err = await res.json();
-            if (err?.error) message = err.error;
-          } catch {}
-          throw new Error(message);
-        }
-
-        const data = await res.json();
-        setResults({ subscriptionId, ...data });
-        setStatus("Lookup completed.", "success");
-        showResults();
-      } catch (err) {
-        setResults();
-        setStatus(err.message || "Lookup failed.", "error");
-        hideResults();
-      } finally {
-        setLoading(false);
-      }
+  try {
+    const res = await fetch("/api/lookup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ subscriptionId: input }), // same field name, now generic
     });
+
+    if (!res.ok) {
+      let message = "Lookup failed.";
+      try {
+        const err = await res.json();
+        if (err?.error) message = err.error;
+      } catch {}
+      throw new Error(message);
+    }
+
+    const data = await res.json();
+
+    // subscription row only when mode === "subscriptionId"
+    setResults({
+      subscriptionId:
+        data.mode === "subscriptionId" ? data.subscriptionId : null,
+      tenantId: data.tenantId,
+      displayName: data.displayName,
+      defaultDomain: data.defaultDomain,
+      mode: data.mode,
+    });
+
+    let suffix = "";
+    if (data.mode === "subscriptionId") suffix = "Subscription ID ";
+    else if (data.mode === "tenantId") suffix = "Tenant ID ";
+    else if (data.mode === "domain") suffix = "Domain ";
+
+    setStatus(suffix + "lookup completed.", "success");
+    showResults();
+  } catch (err) {
+    setResults();
+    setStatus(err.message || "Lookup failed.", "error");
+    hideResults();
+  } finally {
+    setLoading(false);
+  }
+});
+
 
     clearBtn.addEventListener("click", () => {
       subscriptionInput.value = "";
