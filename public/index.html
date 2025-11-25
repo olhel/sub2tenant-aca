@@ -4,18 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-J7FYT7CEV5"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){ dataLayer.push(arguments); }
-    gtag('js', new Date());
-    gtag('config', 'G-J7FYT7CEV5', {
-      anonymize_ip: true,
-      allow_ad_personalization_signals: false
-    });
-  </script>
-
   <!-- Title -->
   <title>Azure Subscription ID to Microsoft Entra tenant lookup · sub2tenant</title>
 
@@ -186,7 +174,7 @@
       </section>
       </div>
     </section>
-
+   
     <div class="visually-hidden">
       <h2>What is sub2tenant?</h2>
       <p>
@@ -222,13 +210,21 @@
       </p>
     </div>
 
+    <div id="cookie-banner" class="cookie-banner" hidden>
+      <p>
+        I added Google Analytics to see if this is actually useful to people. No ads or marketing tracking.
+      </p>
+      <div class="cookie-actions">
+        <button id="cookie-accept">Accept</button>
+        <button id="cookie-reject">Reject</button>
+      </div>
+    </div>
+
   </main>
 
 <footer class="footer">
   <div class="footer-inner">
     <span class="footer-links">
-      © 2025 sub2tenant.com
-      <span class="sep">•</span>
       <a href="https://github.com/olhel/sub2tenant-aca" target="_blank">Source on GitHub</a>
       <span class="sep">•</span>
       <a href="https://buymeacoffee.com/olhel" target="_blank">Buy me a beer 🍺</a>
@@ -441,5 +437,132 @@ function setButtonLabel(label, mode) {
     hideResults();
     setButtonLabel("Lookup", "lookup");
   </script>
+
+  <script>
+    function updatePlaceholder() {
+      const input = document.querySelector('.hero-input');
+      if (!input) return;
+
+      if (window.innerWidth < 720) {
+        input.placeholder = "Subscription ID, tenant ID or domain";
+      } else {
+        input.placeholder = "Paste a subscription ID, tenant ID, or domain name";
+      }
+    }
+
+    window.addEventListener('resize', updatePlaceholder);
+    window.addEventListener('DOMContentLoaded', updatePlaceholder);
+  </script>
+
+  <script>
+  (function () {
+    const CONSENT_KEY = "cookie-consent";
+    const EU_COUNTRIES = [
+      // EU
+      "AT","BE","BG","HR","CY","CZ","DK","EE","FI","FR","DE","GR","HU",
+      "IE","IT","LV","LT","LU","MT","NL","PL","PT","RO","SK","SI","ES","SE",
+      // EEA
+      "NO","IS","LI",
+      // UK + CH
+      "GB","UK","CH"
+    ];
+
+    const banner = document.getElementById("cookie-banner");
+    const acceptBtn = document.getElementById("cookie-accept");
+    const rejectBtn = document.getElementById("cookie-reject");
+
+    function showBanner() {
+      if (banner) banner.hidden = false;
+    }
+
+    function hideBanner() {
+      if (banner) banner.hidden = true;
+    }
+
+    function loadGA() {
+      if (window.__gaLoaded) return; // avoid double loading
+      window.__gaLoaded = true;
+
+      // GA4 loader
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){ dataLayer.push(arguments); }
+      window.gtag = gtag;
+
+      const gtagScript = document.createElement("script");
+      gtagScript.async = true;
+      gtagScript.src = "https://www.googletagmanager.com/gtag/js?id=G-J7FYT7CEV5";
+      document.head.appendChild(gtagScript);
+
+      gtag("js", new Date());
+      gtag("config", "G-J7FYT7CEV5", {
+        anonymize_ip: true,
+        allow_ad_personalization_signals: false
+      });
+    }
+
+    function handleEUFlow() {
+      const stored = localStorage.getItem(CONSENT_KEY);
+
+      if (stored === "accepted") {
+        loadGA();
+        return;
+      }
+
+      if (stored === "rejected") {
+        return; // user said no → no GA
+      }
+
+      // No choice yet → show banner and wait
+      showBanner();
+
+      if (acceptBtn) {
+        acceptBtn.addEventListener("click", function () {
+          localStorage.setItem(CONSENT_KEY, "accepted");
+          hideBanner();
+          loadGA();
+        });
+      }
+
+      if (rejectBtn) {
+        rejectBtn.addEventListener("click", function () {
+          localStorage.setItem(CONSENT_KEY, "rejected");
+          hideBanner();
+        });
+      }
+    }
+
+    function init() {
+      // Geo lookup: ipapi.co returns a 2-letter country code as plain text
+      fetch("https://ipapi.co/country/")
+        .then(function (resp) {
+          if (!resp.ok) throw new Error("Geo lookup failed");
+          return resp.text();
+        })
+        .then(function (code) {
+          const country = (code || "").trim().toUpperCase();
+
+          if (EU_COUNTRIES.includes(country)) {
+            // EU/EEA/UK/CH → consent flow
+            handleEUFlow();
+          } else {
+            // Rest of world → no banner, GA loads directly
+            loadGA();
+          }
+        })
+        .catch(function () {
+          // If geo fails, play it safe and treat as EU
+          handleEUFlow();
+        });
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", init);
+    } else {
+      init();
+    }
+  })();
+  </script>
+
+
 </body>
 </html>

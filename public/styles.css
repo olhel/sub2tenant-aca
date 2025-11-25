@@ -122,13 +122,12 @@ body {
 }
 
 .hero-input:focus {
-  border-color: rgba(59, 130, 246, 0.55);
+  border-color: rgba(28, 69, 175, 0.55);      /* matches button tone */
   box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.05),
-    0 0 0 3px rgba(59, 130, 246, 0.18),   /* down from .22 */
-    0 0 8px rgba(59, 130, 246, 0.12);    /* down from 12px & 0.18 */
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 0 0 3px rgba(28, 69, 175, 0.20),
+    0 0 6px rgba(28, 69, 175, 0.12);
 }
-
 
 /* ------------------------------
    BUTTONS
@@ -151,14 +150,13 @@ body {
 
 
 .btn-primary {
-  background: #2563eb;
-  color: rgba(229, 231, 235, 0.85);
-  border: 1px solid #1e4fd6;
-  box-shadow: none;
+  background: #1c45af;                    /* darker, softer */
+  border: 1px solid #183c9a;
+  color: rgba(229, 231, 235, 0.88);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #1e4fd6;
+  background: #183c9a;
   transform: translateY(-1px);
 }
 
@@ -379,7 +377,7 @@ body {
   margin: 0 0.1rem;
   border-radius: 4px;
 
-  font-size: 0.82rem;   /* bumped from 0.75rem */
+  font-size: 0.94rem;   /* bumped from 0.75rem */
   line-height: 1.2;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace;
 
@@ -464,6 +462,75 @@ body {
   border: 0;
 }
 
+.cookie-banner {
+  position: fixed;
+  bottom: 1.4rem;
+  right: 1.4rem;
+  background: #0f172a; /* solid dark */
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  padding: 1rem 1.25rem 1.2rem;
+  border-radius: 1.2rem;
+  font-size: 0.83rem;
+  color: var(--text-muted); /* ← softer */
+  max-width: 330px;
+  box-shadow: var(--shadow-soft);
+  z-index: 99999;
+}
+
+.cookie-banner p {
+  margin: 0;
+  color: color-mix(in srgb, var(--text-muted) 80%, transparent);
+}
+
+
+/* Center the buttons horizontally */
+.cookie-actions {
+  margin-top: 1.05rem;
+  display: flex;
+  justify-content: center;   /* centered */
+  gap: 0.6rem;
+}
+
+/* Base cookie button — small, subtle */
+.cookie-banner button {
+  height: 34px;                 /* smaller */
+  padding: 0 1.1rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid rgba(148,163,184,0.25);
+  background: rgba(255,255,255,0.05);
+  color: var(--text-muted);
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+/* Hover state – gentle, not “hero blue” */
+.cookie-banner button:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(148,163,184,0.45);
+  color: var(--text-main);
+  transform: translateY(-1px);
+}
+
+/* Accept button – soft blue, not hero blue */
+#cookie-accept {
+  background: rgba(37, 99, 235, 0.20);      /* softer blue */
+  border-color: rgba(37, 99, 235, 0.32);
+  color: rgba(229, 231, 235, 0.72);
+}
+
+#cookie-accept:hover {
+  background: rgba(37, 99, 235, 0.28);
+  border-color: rgba(37, 99, 235, 0.45);
+  color: rgba(229, 231, 235, 0.90);
+  transform: translateY(-1px);
+}
+
 /* ------------------------------
    MOBILE
 ------------------------------ */
@@ -497,5 +564,37 @@ body {
 
   .hero-copy {
     margin-bottom: 1.8rem;
+  }
+   
+  .cookie-banner {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    bottom: 3rem;
+
+    width: 88%;
+    max-width: 88%;
+
+    padding: 1rem 1.1rem 1.25rem;
+    border-radius: 1rem;
+
+    background: #0f172a; /* solid dark */
+  }
+
+  .cookie-banner p {
+    text-align: center;
+    line-height: 1.45;
+  }
+
+  .cookie-actions {
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  .cookie-banner button {
+    flex: none;
+    padding: 0 1.2rem;
+    height: 36px;
   }
 }
