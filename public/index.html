@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-J7FYT7CEV5"></script>
   <script>
@@ -16,25 +17,23 @@
   </script>
 
   <!-- Title -->
-  <title>Find Microsoft Entra Tenant from Azure Subscription ID · sub2tenant</title>
+  <title>Azure Subscription ID to Microsoft Entra tenant lookup · sub2tenant</title>
 
   <!-- Primary SEO -->
-  <meta name="description" content="Paste any Azure Subscription ID and instantly find the associated Microsoft Entra tenant. sub2tenant uses the Azure Resource Manager WWW-Authenticate header and Microsoft Graph to return tenantId, displayName, and default domain. No sign-in required and no data stored.">
-  <meta name="keywords" content="Azure subscription tenant lookup, find Azure tenant from Subscription ID, Azure Entra tenant, tenantId lookup, defaultDomainName lookup, ARM WWW-Authenticate, Microsoft Graph, MSP tools">
+  <meta name="description" content="Paste any Azure Subscription ID and instantly see which Microsoft Entra tenant it belongs to. sub2tenant maps subscription IDs, tenant IDs or domains to tenantId, displayName and defaultDomainName using Azure Resource Manager and Microsoft Graph. No sign-in required and no lookup data stored.">
+  <meta name="keywords" content="Azure subscription ID lookup, Azure subscription to tenant, find Microsoft Entra tenant from subscription ID, Azure tenant lookup, tenantId lookup, defaultDomainName lookup, ARM WWW-Authenticate, Microsoft Graph tenantRelationships, MSP tools">
   <link rel="canonical" href="https://sub2tenant.com/">
 
   <!-- Favicons -->
   <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
-
-  <!-- PNG fallbacks -->
   <link rel="alternate icon" href="/assets/icons/favicon-32.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/favicon-256.png">
 
   <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://sub2tenant.com/">
-  <meta property="og:title" content="Find Microsoft Entra Tenant from Azure Subscription ID · sub2tenant">
-  <meta property="og:description" content="Lookup Microsoft Entra tenant details from any Azure Subscription ID: tenantId, displayName and defaultDomainName. No sign-in required and no data stored.">
+  <meta property="og:title" content="Azure Subscription ID to Microsoft Entra tenant lookup · sub2tenant">
+  <meta property="og:description" content="Lookup Microsoft Entra tenant details from any Azure Subscription ID, tenant ID or domain: tenantId, displayName and defaultDomainName. No sign-in required and no lookup data stored.">
   <meta property="og:image" content="https://sub2tenant.com/assets/og/og-image.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -42,8 +41,8 @@
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:url" content="https://sub2tenant.com/">
-  <meta name="twitter:title" content="Find Microsoft Entra Tenant from Azure Subscription ID · sub2tenant">
-  <meta name="twitter:description" content="Lookup Microsoft Entra tenant details from any Azure Subscription ID: tenantId, displayName and defaultDomainName. No sign-in required and no data stored.">
+  <meta name="twitter:title" content="Azure Subscription ID to Microsoft Entra tenant lookup · sub2tenant">
+  <meta name="twitter:description" content="Lookup Microsoft Entra tenant details from any Azure Subscription ID, tenant ID or domain: tenantId, displayName and defaultDomainName. No sign-in required and no lookup data stored.">
   <meta name="twitter:image" content="https://sub2tenant.com/assets/og/og-image.png">
 
   <!-- Preload OG Image -->
@@ -56,7 +55,7 @@
     "@type": "WebApplication",
     "name": "sub2tenant",
     "url": "https://sub2tenant.com/",
-    "description": "Paste any Azure Subscription ID and instantly find the associated Microsoft Entra tenant. sub2tenant uses the Azure Resource Manager WWW-Authenticate header and Microsoft Graph to return tenantId, displayName, and default domain. No sign-in required and no data stored.",
+    "description": "Paste any Azure Subscription ID, tenant ID or domain and instantly find the associated Microsoft Entra tenant. Sub2tenant uses the Azure Resource Manager WWW-Authenticate header and Microsoft Graph tenantRelationships API to return tenantId, displayName and defaultDomainName. No sign-in required and no lookup data stored.",
     "applicationCategory": "DeveloperApplication",
     "operatingSystem": "Any",
     "creator": {
@@ -66,8 +65,10 @@
     "featureList": [
       "Lookup Microsoft Entra tenant from Azure Subscription ID",
       "Returns tenantId, displayName and defaultDomainName",
-      "Uses ARM WWW-Authenticate header and Microsoft Graph",
-      "No sign-in required and no data stored."
+      "Supports subscription ID, tenant ID and domain lookups",
+      "Uses ARM WWW-Authenticate header and Microsoft Graph tenantRelationships API",
+      "No sign-in required and no lookup data stored",
+      "find tenant from subscription id"
     ]
   }
   </script>
@@ -77,162 +78,170 @@
 </head>
 
 <body>
-  <header class="nav">
-    <div class="nav-inner">
-      <div class="nav-left">
-        <a href="/" class="brand-link">sub2tenant.com</a>
-      </div>
-      <div class="nav-center"></div>
-      <div class="nav-right"></div>
-    </div>
-  </header>
+  <main class="page">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-inner">
 
-  <main class="wrap">
-    <section class="card">
-      <div class="card-inner">
-        <h1 class="card-title">Find Microsoft Entra Tenant from Azure Subscription ID</h1>
+        <!-- TOP: search bar, status, results -->
+        <div class="search-stack">
+          <form id="lookup-form" class="hero-form">
+            <div class="hero-form-row">
+              <input
+                id="subscriptionId"
+                name="subscriptionId"
+                class="hero-input"
+                type="text"
+                placeholder="Paste a subscription ID, tenant ID, or domain name"
+                autocomplete="off"
+                spellcheck="false"
+                aria-label="Paste a subscription ID, tenant ID, or domain name"
+              />
 
-        <p class="lead">
-          This tool resolves <code>tenantId</code>, <code>displayName</code> and
-          <code>defaultDomainName</code> for an Azure Subscription ID using the Azure Resource Manager
-          <code>WWW-Authenticate</code> header and Microsoft Graph’s
-          <code>tenantRelationships</code> API.<br> 
-            <span style="display: block; margin-top: 0.65rem;">
-              It also supports direct tenant lookups using a tenant ID or domain name.
-            </span>
+              <!-- Single button: Lookup ↔ Clear -->
+              <button
+                type="submit"
+                class="btn btn-primary btn-lg"
+                id="action-btn"
+              >
+                Lookup
+              </button>
+            </div>
+          </form>
+
+          <div id="status" class="status" aria-live="polite"></div>
+
+          <div id="results-container" class="results results-hidden" aria-live="polite">
+            <dl class="result-list" aria-label="Lookup result">
+              <div class="result-row" id="subscriptionRow">
+                <dt>Subscription ID</dt>
+                <dd>
+                  <span id="resultSubscriptionId" class="result-value mono muted">–</span>
+                  <button
+                    type="button"
+                    class="btn-icon copy-btn"
+                    data-copy-target="resultSubscriptionId"
+                  >
+                    Copy
+                  </button>
+                </dd>
+              </div>
+
+              <div class="result-row">
+                <dt>Tenant ID</dt>
+                <dd>
+                  <span id="tenantId" class="result-value mono muted">–</span>
+                  <button
+                    type="button"
+                    class="btn-icon copy-btn"
+                    data-copy-target="tenantId"
+                  >
+                    Copy
+                  </button>
+                </dd>
+              </div>
+
+              <div class="result-row">
+                <dt>Display name</dt>
+                <dd>
+                  <span id="displayName" class="result-value muted">–</span>
+                  <button
+                    type="button"
+                    class="btn-icon copy-btn"
+                    data-copy-target="displayName"
+                  >
+                    Copy
+                  </button>
+                </dd>
+              </div>
+
+              <div class="result-row">
+                <dt>Default domain</dt>
+                <dd>
+                  <span id="defaultDomain" class="result-value mono muted">–</span>
+                  <button
+                    type="button"
+                    class="btn-icon copy-btn"
+                    data-copy-target="defaultDomain"
+                  >
+                    Copy
+                  </button>
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+
+        <!-- BELOW: title + explanation -->
+      <section class="hero-copy">
+        <p class="hero-lead">
+          <strong>Sub2tenant</strong> is a small utility that tells you which Microsoft Entra tenant owns an Azure Subscription ID.
+          It returns <code>tenantId</code>, <code>displayName</code> and <code>defaultDomainName</code> by using
+          the Azure Resource Manager <code>WWW-Authenticate</code> header and Microsoft Graph’s
+          <code>tenantRelationships</code> API. No sign in required and no lookup data stored.
         </p>
 
-        <form id="lookup-form" class="form">
-          <div class="form-row">
-            <input
-              id="subscriptionId"
-              name="subscriptionId"
-              class="input"
-              type="text"
-              placeholder="Subscription ID, tenant ID, or domain name"
-              autocomplete="off"
-              spellcheck="false"
-              aria-label="Subscription ID"
-            />
-
-            <button
-              type="submit"
-              class="btn btn-primary btn-sm"
-              id="lookup-btn"
-            >
-              Lookup
-            </button>
-
-            <button
-              type="button"
-              id="clear-btn"
-              class="btn btn-secondary btn-sm form-clear"
-            >
-              Clear
-            </button>
-          </div>
-        </form>
-
-        <div id="status" class="status" aria-live="polite"></div>
-
-        <div id="results-container" class="results-hidden">
-          <dl class="result" aria-label="Lookup result">
-
-            <!-- Subscription ID row -->
-            <div class="result-row" id="subscriptionRow">
-              <dt>Subscription ID</dt>
-              <dd class="result-value">
-                <span id="resultSubscriptionId" class="mono muted">–</span>
-                <button
-                  type="button"
-                  class="btn-icon copy-btn"
-                  data-copy-target="resultSubscriptionId"
-                >
-                  Copy
-                </button>
-              </dd>
-            </div>
-
-            <div class="result-row">
-              <dt>Tenant ID</dt>
-              <dd class="result-value">
-                <span id="tenantId" class="mono muted">–</span>
-                <button
-                  type="button"
-                  class="btn-icon copy-btn"
-                  data-copy-target="tenantId"
-                >
-                  Copy
-                </button>
-              </dd>
-            </div>
-
-            <div class="result-row">
-              <dt>Display name</dt>
-              <dd class="result-value">
-                <span id="displayName" class="muted">–</span>
-                <button
-                  type="button"
-                  class="btn-icon copy-btn"
-                  data-copy-target="displayName"
-                >
-                  Copy
-                </button>
-              </dd>
-            </div>
-
-            <div class="result-row">
-              <dt>Default domain</dt>
-              <dd class="result-value">
-                <span id="defaultDomain" class="mono muted">–</span>
-                <button
-                  type="button"
-                  class="btn-icon copy-btn"
-                  data-copy-target="defaultDomain"
-                >
-                  Copy
-                </button>
-              </dd>
-            </div>
-          </dl>
-        </div>
+        <p class="hero-lead hero-lead-secondary">
+          It also supports direct lookups by tenant ID or domain name.
+        </p>
+      </section>
       </div>
     </section>
 
-    <div class="support-block">
-      <p>If this tool saved you time, you can:</p>
-      <a
-        href="https://buymeacoffee.com/olhel"
-        target="_blank"
-        class="btn btn-primary btn-sm support-btn"
-      >
-        Buy me a beer 🍺
-      </a>
-    </div>
-
     <div class="visually-hidden">
-      sub2tenant lets you find which Microsoft Entra tenant an Azure Subscription ID belongs to
-      using the Azure Resource Manager (ARM) WWW-Authenticate header and Microsoft Graph. 
-      No sign-in required, and no lookup data stored.
+      <h2>What is sub2tenant?</h2>
+      <p>
+        sub2tenant is a small Azure utility that lets you find which Microsoft Entra ID tenant
+        an Azure Subscription ID, tenant ID or domain name belongs to. It is useful for MSPs,
+        cloud admins and incident responders who receive only a subscription ID in a ticket,
+        alert, invoice or report and need to quickly identify the owning tenant.
+      </p>
+
+      <h2>How does the Azure Subscription ID to tenant lookup work?</h2>
+      <p>
+        When you paste a subscription ID, sub2tenant makes an unauthenticated call to the Azure
+        Resource Manager endpoint and reads the <code>WWW-Authenticate</code> header to discover
+        the tenant. It then uses Microsoft Graph’s <code>tenantRelationships</code> API
+        (<code>findTenantInformationByTenantId</code>) to return the tenantId, displayName and
+        defaultDomainName for that Microsoft Entra tenant.
+      </p>
+
+      <h2>Does sub2tenant store any subscription or tenant data?</h2>
+      <p>
+        No. The tool does not log or store subscription IDs, tenant IDs or domains. It performs
+        the lookup in memory, returns the tenant information to your browser and discards the
+        values. Only standard sign-in activity for the managed identity calling Microsoft Graph
+        appears in the author’s own tenant.
+      </p>
+
+      <h2>Can I look up a tenant by domain or tenant ID?</h2>
+      <p>
+        Yes. In addition to Azure Subscription ID to tenant lookups, sub2tenant supports direct
+        lookups by Microsoft Entra tenant ID or verified domain name. This makes it easy to
+        confirm tenant details when you already know the tenant identifier but still want
+        display name or default domain information.
+      </p>
     </div>
 
   </main>
 
-  <footer class="footer">
-    <div class="footer-inner">
-      <span>© 2025 sub2tenant.com · <a href="https://github.com/olhel/sub2tenant-aca" target="_blank" style="color: var(--text-muted); text-decoration: none;">
-  Source on GitHub
-</a></span>
-    </div>
-  </footer>
+<footer class="footer">
+  <div class="footer-inner">
+    <span class="footer-links">
+      © 2025 sub2tenant.com
+      <span class="sep">•</span>
+      <a href="https://github.com/olhel/sub2tenant-aca" target="_blank">Source on GitHub</a>
+      <span class="sep">•</span>
+      <a href="https://buymeacoffee.com/olhel" target="_blank">Buy me a beer 🍺</a>
+    </span>
+  </div>
+</footer>
 
   <script>
     const subscriptionRowEl = document.getElementById("subscriptionRow");
     const form = document.getElementById("lookup-form");
     const subscriptionInput = document.getElementById("subscriptionId");
     const statusEl = document.getElementById("status");
-    const clearBtn = document.getElementById("clear-btn");
-    const lookupBtn = document.getElementById("lookup-btn");
+    const actionBtn = document.getElementById("action-btn");
     const resultsContainer = document.getElementById("results-container");
 
     const subscriptionResultEl = document.getElementById("resultSubscriptionId");
@@ -241,13 +250,15 @@
     const defaultDomainEl = document.getElementById("defaultDomain");
     const copyButtons = document.querySelectorAll(".copy-btn");
 
+    let buttonMode = "lookup"; // "lookup" or "clear"
+    let buttonLabel = "Lookup";
+
     function setStatus(message, type = "info") {
       statusEl.textContent = message || "";
       statusEl.className = "status" + (message ? " status-" + type : "");
     }
 
     function setResults({ subscriptionId, tenantId, displayName, defaultDomain, mode } = {}) {
-      // Show/hide subscription row
       if (mode === "tenantId" || mode === "domain") {
         subscriptionRowEl.style.display = "none";
       } else {
@@ -265,11 +276,6 @@
       defaultDomainEl.classList.toggle("muted", !defaultDomain);
     }
 
-    function setLoading(isLoading) {
-      lookupBtn.disabled = isLoading;
-      lookupBtn.textContent = isLoading ? "Looking up…" : "Lookup";
-    }
-
     function showResults() {
       resultsContainer.classList.remove("results-hidden");
       resultsContainer.classList.add("results-visible");
@@ -280,7 +286,39 @@
       resultsContainer.classList.remove("results-visible");
     }
 
-    // Copy buttons
+function setButtonLabel(label, mode) {
+  buttonLabel = label;
+  buttonMode = mode;
+  actionBtn.textContent = label;
+
+  if (mode === "lookup") {
+    actionBtn.classList.remove("btn-ghost");
+    actionBtn.classList.add("btn-primary");
+  } else {
+    actionBtn.classList.remove("btn-primary");
+    actionBtn.classList.add("btn-ghost");
+  }
+}
+
+
+    function setLoading(isLoading) {
+      actionBtn.disabled = isLoading;
+      if (isLoading) {
+        actionBtn.textContent = "Looking up…";
+      } else {
+        actionBtn.textContent = buttonLabel;
+      }
+    }
+
+    function resetAll() {
+      subscriptionInput.value = "";
+      setResults();
+      setStatus("");
+      hideResults();
+      setButtonLabel("Lookup", "lookup");
+      subscriptionInput.focus();
+    }
+
     copyButtons.forEach((btn) => {
       btn.addEventListener("click", async () => {
         const targetId = btn.getAttribute("data-copy-target");
@@ -305,80 +343,103 @@
       });
     });
 
-    form.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const input = subscriptionInput.value.trim();
+    async function performLookup() {
+      const input = subscriptionInput.value.trim();
 
-  if (!input) {
-    setStatus(
-      "Please enter a subscription ID, tenant ID, or domain name.",
-      "error"
-    );
-    hideResults();
-    return;
-  }
+      if (!input) {
+        setStatus("Please enter a subscription ID, tenant ID, or domain name.", "error");
+        hideResults();
+        return;
+      }
 
-  setStatus("Looking up…", "info");
-  setResults();
-  setLoading(true);
-  hideResults();
+      setStatus("Looking up…", "info");
+      setResults();
+      setLoading(true);
+      hideResults();
 
-  try {
-    const res = await fetch("/api/lookup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ subscriptionId: input }), // same field name, now generic
-    });
-
-    if (!res.ok) {
-      let message = "Lookup failed.";
       try {
-        const err = await res.json();
-        if (err?.error) message = err.error;
-      } catch {}
-      throw new Error(message);
+        const res = await fetch("/api/lookup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ subscriptionId: input }),
+        });
+
+        if (!res.ok) {
+          let message = "Lookup failed.";
+          try {
+            const err = await res.json();
+            if (err?.error) message = err.error;
+          } catch {}
+          throw new Error(message);
+        }
+
+        const data = await res.json();
+
+        setResults({
+          subscriptionId: data.mode === "subscriptionId" ? data.subscriptionId : null,
+          tenantId: data.tenantId,
+          displayName: data.displayName,
+          defaultDomain: data.defaultDomain,
+          mode: data.mode,
+        });
+
+        let suffix = "";
+        if (data.mode === "subscriptionId") suffix = "Subscription ID ";
+        else if (data.mode === "tenantId") suffix = "Tenant ID ";
+        else if (data.mode === "domain") suffix = "Domain ";
+
+        setStatus(suffix + "lookup completed.", "success");
+        showResults();
+
+        // After success, switch to Clear mode
+        setButtonLabel("Clear", "clear");
+      } catch (err) {
+        setResults();
+        setStatus(err.message || "Lookup failed.", "error");
+        hideResults();
+        setButtonLabel("Clear", "clear");   // <-- Correct behavior
+      } finally {
+        setLoading(false);
+      }
     }
 
-    const data = await res.json();
-
-    // subscription row only when mode === "subscriptionId"
-    setResults({
-      subscriptionId:
-        data.mode === "subscriptionId" ? data.subscriptionId : null,
-      tenantId: data.tenantId,
-      displayName: data.displayName,
-      defaultDomain: data.defaultDomain,
-      mode: data.mode,
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      if (buttonMode === "lookup") {
+        performLookup();
+      } else {
+        resetAll();
+      }
     });
 
-    let suffix = "";
-    if (data.mode === "subscriptionId") suffix = "Subscription ID ";
-    else if (data.mode === "tenantId") suffix = "Tenant ID ";
-    else if (data.mode === "domain") suffix = "Domain ";
-
-    setStatus(suffix + "lookup completed.", "success");
-    showResults();
-  } catch (err) {
-    setResults();
-    setStatus(err.message || "Lookup failed.", "error");
-    hideResults();
-  } finally {
-    setLoading(false);
-  }
-});
-
-
-    clearBtn.addEventListener("click", () => {
-      subscriptionInput.value = "";
-      setResults();
-      setStatus("");
-      hideResults();
-      subscriptionInput.focus();
+    actionBtn.addEventListener("click", (event) => {
+      event.preventDefault();
+      if (buttonMode === "lookup") {
+        performLookup();
+      } else {
+        resetAll();
+      }
     });
 
-    // Initial empty state
+    subscriptionInput.addEventListener("input", () => {
+      // If we were in Clear mode (after a previous lookup),
+      // switch back to Lookup as soon as user types or pastes.
+      if (buttonMode === "clear") {
+        setButtonLabel("Lookup", "lookup");
+      }
+
+      // Optional: if they completely clear the field, also clear status/results
+      if (!subscriptionInput.value.trim()) {
+        setStatus("");
+        hideResults();
+      }
+    });
+
+
+    // Initial state
     setResults();
     hideResults();
+    setButtonLabel("Lookup", "lookup");
   </script>
 </body>
 </html>
