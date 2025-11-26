@@ -193,7 +193,7 @@ body {
   padding: 0.6rem 0.9rem;
   font-size: 0.76rem;
   border-radius: 999px;
-  border: 1px solid transparent;
+  border: 1px solid rgba(148, 163, 184, 0.22);  /* subtle outline before hover */
   background: transparent;
   color: var(--text-muted);
   cursor: pointer;
@@ -204,9 +204,19 @@ body {
 }
 
 .btn-icon:hover {
-  border-color: rgba(148, 163, 184, 0.5);
+  border-color: rgba(148, 163, 184, 0.5);       /* stronger */
   color: var(--text-main);
   background: rgba(15, 23, 42, 0.75);
+}
+
+.btn-icon.copy-btn-copied {
+  background: color-mix(in srgb, var(--success) 12%, transparent);
+  border-color: color-mix(in srgb, var(--success) 45%, transparent);
+  color: var(--text-main) !important;
+  transition:
+    background 240ms ease,
+    border-color 240ms ease,
+    color 160ms ease;
 }
 
 /* Soft, passive Clear button */
@@ -242,12 +252,29 @@ body {
   color: color-mix(in srgb, var(--text-muted) 92%, transparent);
 }
 
+.status-success,
+.status-error {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.18rem 0.65rem;
+  border-radius: 999px;
+}
+
 .status-success {
   color: color-mix(in srgb, var(--success) 82%, var(--text-main));
+  background: color-mix(in srgb, var(--success) 10%, transparent);
 }
 
 .status-error {
-  color: color-mix(in srgb, var(--danger) 82%, var(--text-main));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.18rem 0.65rem;
+  border-radius: 999px;
+
+  color: color-mix(in srgb, var(--danger) 78%, var(--text-main));
+  background: color-mix(in srgb, var(--danger) 5%, transparent);
 }
 
 /* ------------------------------
@@ -298,8 +325,8 @@ body {
 }
 
 .result-row dt {
-  color: var(--text-muted);
-  font-size: 0.88rem;
+  color: color-mix(in srgb, var(--text-muted) 88%, transparent);
+  font-size: 0.86rem;
   padding-right: 0.5rem;
   text-align: left;
 }
@@ -316,6 +343,9 @@ body {
 .result-value {
   flex: 1;
   color: color-mix(in srgb, var(--text-main) 88%, transparent);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  font-size: 0.94rem;
 }
 
 /* Copy button on the far right */
@@ -346,7 +376,7 @@ body {
 
 .hero-copy {
   max-width: 720px;
-  margin: 0 auto 2.5rem;
+  margin: 0 auto 0rem;
   margin-top: auto;                /* keep it anchored at the bottom */
   text-align: left;                /* ← switch to left aligned */
   padding: 0 1rem;                 /* small horizontal breathing */
@@ -563,7 +593,8 @@ body {
   }
 
   .hero-copy {
-    margin-bottom: 1.8rem;
+    margin-top: auto;
+    margin-bottom: 0rem;
   }
    
   .cookie-banner {
@@ -596,5 +627,9 @@ body {
     flex: none;
     padding: 0 1.2rem;
     height: 36px;
+  }
+   
+  .has-results .hero-copy {
+    display: none;
   }
 }

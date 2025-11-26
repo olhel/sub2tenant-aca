@@ -160,18 +160,18 @@
         </div>
 
         <!-- BELOW: title + explanation -->
-      <section class="hero-copy">
-        <p class="hero-lead">
-          <strong>Sub2tenant</strong> is a small utility that tells you which Microsoft Entra tenant owns an Azure Subscription ID.
-          It returns <code>tenantId</code>, <code>displayName</code> and <code>defaultDomainName</code> by using
-          the Azure Resource Manager <code>WWW-Authenticate</code> header and Microsoft Graph’s
-          <code>tenantRelationships</code> API. No sign in required and no lookup data stored.
-        </p>
+        <section class="hero-copy">
+          <p class="hero-lead">
+            <strong>Sub2tenant</strong> maps any Azure Subscription ID to its Microsoft Entra tenant.
+            It extracts the <code>tenantId</code> from the Azure Resource Manager <code>WWW-Authenticate</code> header
+            and resolves <code>displayName</code> and <code>defaultDomainName</code> via Microsoft Graph’s
+            <code>tenantRelationships</code> API. No sign-in, no logging, no stored lookup data.
+          </p>
 
-        <p class="hero-lead hero-lead-secondary">
-          It also supports direct lookups by tenant ID or domain name.
-        </p>
-      </section>
+          <p class="hero-lead hero-lead-secondary">
+            Also supports tenant lookups by tenant ID or domain name.
+          </p>
+        </section>
       </div>
     </section>
    
@@ -307,6 +307,7 @@ function setButtonLabel(label, mode) {
     }
 
     function resetAll() {
+      document.body.classList.remove("has-results");  // <-- add this line
       subscriptionInput.value = "";
       setResults();
       setStatus("");
@@ -348,7 +349,7 @@ function setButtonLabel(label, mode) {
         return;
       }
 
-      setStatus("Looking up…", "info");
+      setStatus("", "info");
       setResults();
       setLoading(true);
       hideResults();
@@ -386,6 +387,7 @@ function setButtonLabel(label, mode) {
 
         setStatus(suffix + "lookup completed.", "success");
         showResults();
+        document.body.classList.add("has-results"); 
 
         // After success, switch to Clear mode
         setButtonLabel("Clear", "clear");
