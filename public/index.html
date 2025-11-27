@@ -220,17 +220,9 @@
 
         <!-- BELOW: title + explanation -->
         <section class="hero-copy">
-          <p class="hero-lead">
-            <strong>sub2tenant</strong> maps any Azure Subscription ID to its Microsoft Entra tenant.
-            It extracts the <code>tenantId</code> from the Azure Resource Manager
-            <code>WWW-Authenticate</code> header and uses Microsoft Graph’s
-            <code>tenantRelationships</code> API to resolve <code>displayName</code> and
-            <code>defaultDomainName</code>. No sign-in, no logging, no stored lookup data.
-          </p>
-
-          <p class="hero-lead hero-lead-secondary">
-            Also supports tenant lookups by tenant ID or verified domain name — all in one input field.
-          </p>
+        <p class="hero-lead">
+          <strong>sub2tenant</strong> maps any Azure Subscription ID, tenant ID or verified domain to its Microsoft Entra tenant.
+        </p>
         </section>
       </div>
     </section>

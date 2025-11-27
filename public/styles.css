@@ -45,7 +45,7 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding-top: 18vh; /* or your updated vh spacing */
+  padding-top: 22vh; /* or your updated vh spacing */
   padding-left: 1.6rem;
   padding-right: 1.6rem;
   padding-bottom: 2.5rem;
@@ -558,6 +558,23 @@ body {
 /* ------------------------------
    MOBILE
 ------------------------------ */
+@media (max-height: 900px) {
+  .page {
+    padding-top: 16vh;
+  }
+}
+
+@media (max-height: 750px) {
+  .page {
+    padding-top: 12vh;
+  }
+}
+
+@media (max-height: 650px) {
+  .page {
+    padding-top: 8vh;
+  }
+}
 
 @media (max-width: 720px) {
   .page {
