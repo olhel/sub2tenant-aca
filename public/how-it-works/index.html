@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="format-detection" content="telephone=no">
+
+  <!-- Title -->
+  <title>How sub2tenant works · Azure Subscription ID to Microsoft Entra tenant lookup</title>
+
+  <!-- Primary SEO -->
+  <meta name="description" content="How sub2tenant maps an Azure Subscription ID, tenant ID or verified domain to its Microsoft Entra tenant using Azure Resource Manager and Microsoft Graph. No sign-in required and no lookup data stored.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:locale" content="en_US">
+  <meta name="theme-color" content="#0b1220">
+  <link rel="canonical" href="https://sub2tenant.com/how-it-works/">
+  <link rel="alternate" href="https://sub2tenant.com/how-it-works/" hreflang="en" />
+  <link rel="alternate" href="https://sub2tenant.com/how-it-works/" hreflang="x-default" />
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+  <link rel="alternate icon" href="/assets/icons/favicon-32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/favicon-256.png">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://sub2tenant.com/how-it-works/">
+  <meta property="og:title" content="How sub2tenant works · Azure Subscription ID to Microsoft Entra tenant lookup">
+  <meta property="og:description" content="sub2tenant performs two lightweight lookups using Azure Resource Manager and Microsoft Graph to return tenantId, displayName and defaultDomainName for a subscription ID, tenant ID or verified domain. No sign-in required and no lookup data stored.">
+  <meta property="og:image" content="https://sub2tenant.com/assets/og/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://sub2tenant.com/how-it-works/">
+  <meta name="twitter:title" content="How sub2tenant works · Azure Subscription ID to Microsoft Entra tenant lookup">
+  <meta name="twitter:description" content="How sub2tenant uses Azure Resource Manager and Microsoft Graph to resolve Microsoft Entra tenant details from a subscription ID, tenant ID or verified domain.">
+  <meta name="twitter:image" content="https://sub2tenant.com/assets/og/og-image.png">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://sub2tenant.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "How it works",
+      "item": "https://sub2tenant.com/how-it-works/"
+    }
+  ]
+}
+</script>
+
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="/styles.css">
+  <!-- Page-specific tweaks -->
+  <style>
+    /* Less vertical space than the main lookup page */
+    .page {
+      padding-top: 8vh;
+    }
+
+    /* Make the H1 look like a real title */
+    .hero-title {
+      font-size: 1.35rem;
+      font-weight: 600;
+      margin: 0 0 0.8rem;
+      color: var(--text-main);
+    }
+
+    /* Keep content comfortably narrow */
+    .hero-copy {
+    max-width: 720px;
+    margin: 3rem auto 0;
+    }
+
+    /* Slightly more relaxed line height for text-heavy page */
+    .hero-copy .hero-lead {
+      line-height: 1.62;
+    }
+
+    /* Links inside content: same style as footer links */
+    .hero-copy a {
+    color: color-mix(in srgb, var(--text-main) 75%, var(--text-muted));
+    text-decoration: none;
+    transition: color 0.15s ease;
+    }
+
+    .hero-copy a:hover {
+    text-decoration: underline;
+    color: var(--text-main);
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <section class="hero" aria-labelledby="how-title">
+      <div class="hero-inner">
+        <section class="hero-copy">
+          <h1 id="how-title" class="hero-title" aria-level="1">
+            How <strong>sub2tenant</strong> works
+          </h1>
+
+          <p class="hero-lead" style="margin-top: 0.6rem;">
+            <strong>sub2tenant</strong> performs two lightweight lookups to tell you which Microsoft Entra tenant
+            a subscription ID, tenant ID, or verified domain belongs to.
+          </p>
+
+          <p class="hero-lead hero-lead-secondary">
+            <strong>1. Subscription → Tenant</strong><br>
+            Azure Resource Manager exposes the tenant ID for any subscription in the
+            <code>WWW-Authenticate</code> header returned by the subscription endpoint. This requires
+            no authentication, no permissions, and no access to any customer tenant.
+          </p>
+
+          <p class="hero-lead hero-lead-secondary">
+            <strong>2. Tenant → Details</strong><br>
+            The tool uses a managed identity in the tenant that hosts sub2tenant to call Microsoft Graph’s
+            <code>tenantRelationships</code> API. Depending on the input, it uses
+            <code>findTenantInformationByTenantId</code> for subscription IDs and tenant IDs, or
+            <code>findTenantInformationByDomainName</code> for verified domains. Graph returns the tenant’s
+            <code>tenantId</code>, <code>displayName</code>, and <code>defaultDomainName</code>.
+          </p>
+
+          <p class="hero-lead hero-lead-secondary">
+            No lookup data is stored, logged, or transmitted anywhere. Inputs are discarded immediately
+            after the two calls.
+          </p>
+
+          <p class="hero-lead hero-lead-secondary">
+            For full technical details and the complete code, see the
+            <a href="https://github.com/olhel/sub2tenant-aca" target="_blank" rel="noopener">GitHub repository</a>.
+          </p>
+
+          <p class="hero-lead hero-lead-secondary">
+            <a href="/">← Back to lookup</a>
+          </p>
+        </section>
+      </div>
+    </section>
+  </main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <span class="footer-links">
+      <a href="/">Lookup</a>
+      <span class="sep">·</span>
+      <a href="/how-it-works/" aria-current="page">How it works</a>
+      <span class="sep">·</span>
+      <a href="/about/">About</a>
+      <span class="sep">·</span>
+      <a href="https://github.com/olhel/sub2tenant-aca"
+         target="_blank" rel="noopener noreferrer">GitHub</a>
+    </span>
+  </div>
+</footer>
+
+  <!-- Cookie banner + GA consent -->
+  <div id="cookie-banner" class="cookie-banner" hidden>
+    <p>
+      Added Google Analytics to see if this is actually useful to people. No ads or marketing tracking.
+    </p>
+    <div class="cookie-actions">
+      <button id="cookie-accept">Accept</button>
+      <button id="cookie-reject">Reject</button>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const CONSENT_KEY = "cookie-consent";
+      const EU_COUNTRIES = [
+        "AT","BE","BG","HR","CY","CZ","DK","EE","FI","FR","DE","GR","HU",
+        "IE","IT","LV","LT","LU","MT","NL","PL","PT","RO","SK","SI","ES","SE",
+        "NO","IS","LI","GB","UK","CH"
+      ];
+
+      const banner = document.getElementById("cookie-banner");
+      const acceptBtn = document.getElementById("cookie-accept");
+      const rejectBtn = document.getElementById("cookie-reject");
+
+      function showBanner() { if (banner) banner.hidden = false; }
+      function hideBanner() { if (banner) banner.hidden = true; }
+
+      function loadGA() {
+        if (window.__gaLoaded) return;
+        window.__gaLoaded = true;
+
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){ dataLayer.push(arguments); }
+        window.gtag = gtag;
+
+        const script = document.createElement("script");
+        script.async = true;
+        script.src = "https://www.googletagmanager.com/gtag/js?id=G-J7FYT7CEV5";
+        document.head.appendChild(script);
+
+        gtag("js", new Date());
+        gtag("config", "G-J7FYT7CEV5", {
+          anonymize_ip: true,
+          allow_ad_personalization_signals: false
+        });
+      }
+
+      function handleEUFlow() {
+        const stored = localStorage.getItem(CONSENT_KEY);
+
+        if (stored === "accepted") {
+          loadGA();
+          return;
+        }
+        if (stored === "rejected") {
+          return;
+        }
+
+        showBanner();
+
+        acceptBtn?.addEventListener("click", function () {
+          localStorage.setItem(CONSENT_KEY, "accepted");
+          hideBanner();
+          loadGA();
+        });
+
+        rejectBtn?.addEventListener("click", function () {
+          localStorage.setItem(CONSENT_KEY, "rejected");
+          hideBanner();
+        });
+      }
+
+      function init() {
+        fetch("https://ipapi.co/country/")
+          .then(r => r.ok ? r.text() : Promise.reject())
+          .then(code => {
+            const cc = (code || "").trim().toUpperCase();
+            EU_COUNTRIES.includes(cc) ? handleEUFlow() : loadGA();
+          })
+          .catch(() => handleEUFlow());
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init);
+      } else {
+        init();
+      }
+    })();
+  </script>
+</body>
+</html>

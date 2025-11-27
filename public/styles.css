@@ -402,18 +402,12 @@ body {
 }
 
 .hero-copy code {
-  display: inline-block;
-  padding: 0.08rem 0.38rem;
-  margin: 0 0.1rem;
-  border-radius: 4px;
-
-  font-size: 0.94rem;   /* bumped from 0.75rem */
-  line-height: 1.2;
+  padding: 0.03rem 0.22rem;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0;
+  font-size: 0.92rem;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace;
-
-  color: color-mix(in srgb, var(--text-main) 82%, transparent);  /* slightly brighter than before */
-  background: rgba(255, 255, 255, 0.035);                       /* very subtle */
-  border: 1px solid rgba(255, 255, 255, 0.08);                  /* slightly clearer */
 }
 
 /* ------------------------------
