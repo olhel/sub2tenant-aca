@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Azure Subscription ID to Tenant Lookup · sub2tenant</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="description" content="Map any Azure Subscription ID to its Microsoft Entra tenant. sub2tenant uses an unauthenticated ARM call and Microsoft Graph to return tenantId, displayName and defaultDomainName.">
+
+  <link rel="canonical" href="https://sub2tenant.com/subscription-to-tenant/" />
+
+  <!-- Redirect users immediately -->
+  <meta http-equiv="refresh" content="0.2; url=/" />
+  <script>window.location.replace("/");</script>
+</head>
+<body>
+<h1>Azure Subscription ID to Tenant Lookup</h1>
+
+<p>
+  Map any Azure Subscription ID directly to its Microsoft Entra tenant. <strong>sub2tenant</strong>
+  performs an unauthenticated Azure Resource Manager request to extract the tenant from the
+  <code>WWW-Authenticate</code> header and then uses Microsoft Graph to return the
+  <code>tenantId</code>, <code>displayName</code> and <code>defaultDomainName</code>.
+</p>
+
+<p>
+  This is useful when a subscription ID appears in tickets, alerts, invoices or reports and tenant
+  context is missing. No sign-in is required, and no subscription IDs or results are logged or
+  stored.
+</p>
+
+<noscript>
+  If you are not redirected automatically, open
+  <a href="/">https://sub2tenant.com/</a>.
+</noscript>
+</body>
+</html>

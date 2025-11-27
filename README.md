@@ -1,65 +1,135 @@
-# sub2tenant – Identify the Tenant Behind an Azure Subscription ID
+# sub2tenant -- Map Azure Subscription IDs to Microsoft Entra tenants
 
-sub2tenant maps an **Azure Subscription ID** to its **Microsoft Entra tenant**.  
-It also supports **direct tenant lookups** using a **tenant ID** or **domain name**.
+sub2tenant maps an Azure Subscription ID to its Microsoft Entra tenant. It also supports tenant lookups using a tenant ID or a verified domain name, using only the minimal Microsoft Graph permission required in the hosting tenant.
 
-The public site is available at **https://sub2tenant.com**.  
-This repository contains the source code so anyone can see how the service works.
+The public service is available at **https://sub2tenant.com**.
 
-## What the Service Does
+This repository contains the full source code so anyone can review how it works.
 
-- Supports direct lookup using:
-  - A **subscription ID** (GUID)
-  - A **tenant ID** (GUID)
-  - A **domain name** (verified Entra custom domain)
-- For a **subscription ID**, it retrieves the tenant ID from Azure Resource Manager's `WWW-Authenticate` header (no authentication required)
-- Calls Microsoft Graph with a Managed Identity and retrieves:
-  - `tenantId`
-  - `displayName`
-  - `defaultDomainName`
-- Returns only these fields to the client
-- Does not store or log any lookup data
+------------------------------------------------------------------------
 
-## Privacy and Security
+## What the service does
 
-- Subscription IDs, tenant IDs and domains are not logged
-- No data is written to disk
-- No secrets are used since the backend relies on a Managed Identity
-- Only the Graph permission **CrossTenantInformation.ReadBasic.All** is required
-- No user authentication is required
+sub2tenant is a lightweight tenant lookup utility for Azure and
+Microsoft Entra. It supports lookups using:
 
-## How It Works
+-   **Azure Subscription ID** (GUID)
+-   **Tenant ID** (GUID)
+-   **Domain name** (verified Entra/M365 custom domain)
 
-1. The service sends:
+### Subscription → Tenant lookup
 
-       GET https://management.azure.com/subscriptions/{id}?api-version=2022-12-01
+When supplied with a Subscription ID:
 
-   ARM responds with a `401` and includes the tenant ID in the `WWW-Authenticate` header.
+1.  The backend calls ARM:
 
-2. The backend extracts the tenant ID.
+        GET https://management.azure.com/subscriptions/{id}?api-version=2022-12-01
 
-3. The backend calls one of the following Microsoft Graph endpoints:
+2.  ARM responds with `401 Unauthorized` and includes the tenant ID in
+    the `WWW-Authenticate` header:
 
-       GET https://graph.microsoft.com/v1.0/tenantRelationships/findTenantInformationByTenantId(...)
-       GET https://graph.microsoft.com/v1.0/tenantRelationships/findTenantInformationByDomainName(...)
+        Bearer authorization_uri="https://login.microsoftonline.com/{tenantId}", ...
 
-   using a Managed Identity.
+3.  sub2tenant extracts the `tenantId` from that header.
 
-4. The response is trimmed to the minimal required fields and returned.
+4.  Microsoft Graph's `tenantRelationships` API is called to retrieve:
 
-## Project Structure
+    -   `tenantId`
+    -   `displayName`
+    -   `defaultDomainName`
 
+Only these fields are returned to the client.
+
+------------------------------------------------------------------------
+
+## Privacy and security
+
+sub2tenant is designed to be transparent, minimal, and predictable:
+
+-   Subscription IDs, tenant IDs and domains are **not logged**
+-   No lookup data is written to disk or stored anywhere
+-   No client secrets or app registrations are used
+-   The backend uses a **system-assigned Managed Identity** in the author's Azure tenant
+-   Only this Managed Identity is granted the Microsoft Graph permission **`CrossTenantInformation.ReadBasic.All`** (required for basic tenant discovery)
+-   Users of the public site do **not** need any permissions, tokens, or authentication
+-   ARM calls are unauthenticated; Graph calls are made by the Managed Identity
+
+------------------------------------------------------------------------
+
+## High-level architecture
+
+    User request → Node/Express backend → ARM unauthenticated call
+               → Extract tenantId → Microsoft Graph call (MI)
+               → Return displayName + defaultDomainName
+
+-   **No database**
+-   **No persistent logs of input**
+-   Frontend is static HTML/CSS/JS
+
+------------------------------------------------------------------------
+
+## Running locally
+
+Requirements:
+
+-   Node.js 20+
+-   (Optional) Azure CLI if you plan to deploy your own environment
+
+### Local development
+
+``` bash
+git clone https://github.com/olhel/sub2tenant-aca.git
+cd sub2tenant-aca
+
+npm install
+npm start
 ```
-sub2tenant/
-  server.js
-  public/
-  Dockerfile
-  package.json
-  package-lock.json
-  .gitignore
-  .dockerignore
-```
+
+This starts the app on the port defined in `server.js` or the `PORT` environment variable.
+
+### Deploying your own instance (optional)
+
+To run a self-hosted version in Azure:
+
+1.  Deploy to a service that supports **Managed Identity**, such as:
+
+    -   Azure Container Apps
+    -   Azure App Service
+    -   Azure Kubernetes Service (with workload identity)
+
+2.  Grant the Managed Identity the Graph permission:
+
+        CrossTenantInformation.ReadBasic.All
+
+3.  Deploy the container using the included `Dockerfile`.
+
+------------------------------------------------------------------------
+
+## Project structure
+
+    sub2tenant-aca/
+      server.js           # Express backend (lookup logic)
+      public/             # Static frontend (index.html, CSS, JS)
+        index.html
+        style.css
+        script.js
+      Dockerfile          # Container image build
+      package.json
+      package-lock.json
+      .github/workflows/  # CI pipeline for container build/publish
+
+------------------------------------------------------------------------
+
+## Limitations
+
+-   Does **not** enumerate subscriptions
+-   Does **not** require or use user credentials
+-   Does **not** bypass Azure RBAC
+-   Domain lookups work only for **verified** domains in Entra ID
+-   Only exposes minimal tenant metadata (displayName + defaultDomainName)
+
+------------------------------------------------------------------------
 
 ## License
 
-MIT License. See the `LICENSE` file.
+MIT License. See the [`LICENSE`](./LICENSE) file.

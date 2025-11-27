@@ -3,15 +3,23 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://graph.microsoft.com">
+  <link rel="preconnect" href="https://management.azure.com">
+  <meta name="format-detection" content="telephone=no">
 
   <!-- Title -->
   <title>Azure Subscription ID to Microsoft Entra tenant lookup · sub2tenant</title>
 
   <!-- Primary SEO -->
-  <meta name="description" content="Paste any Azure Subscription ID and instantly see which Microsoft Entra tenant it belongs to. sub2tenant maps subscription IDs, tenant IDs or domains to tenantId, displayName and defaultDomainName using Azure Resource Manager and Microsoft Graph. No sign-in required and no lookup data stored.">
-  <meta name="keywords" content="Azure subscription ID lookup, Azure subscription to tenant, find Microsoft Entra tenant from subscription ID, Azure tenant lookup, tenantId lookup, defaultDomainName lookup, ARM WWW-Authenticate, Microsoft Graph tenantRelationships, MSP tools">
+  <meta name="description" content="Map any Azure Subscription ID to its Microsoft Entra tenant. sub2tenant performs a fast tenant lookup using Azure Resource Manager and Microsoft Graph and also supports tenant lookups by tenant ID or verified domain. No sign-in required and no lookup data stored.">
+  <meta name="keywords" content="Azure subscription ID lookup, subscription GUID lookup, subscription identifier tenant mapping, find tenant from subscription ID, Azure tenant lookup tool, tenantId lookup, domain tenant lookup, Microsoft Entra tenant discovery">
+  <meta name="robots" content="index, follow">
+  <meta property="og:locale" content="en_US">
+  <meta name="theme-color" content="#0b1220">
   <link rel="canonical" href="https://sub2tenant.com/">
-
+  <link rel="alternate" href="https://sub2tenant.com/" hreflang="en" />
+  <link rel="alternate" href="https://sub2tenant.com/" hreflang="x-default" />
+  
   <!-- Favicons -->
   <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
   <link rel="alternate icon" href="/assets/icons/favicon-32.png">
@@ -43,20 +51,66 @@
     "@type": "WebApplication",
     "name": "sub2tenant",
     "url": "https://sub2tenant.com/",
-    "description": "Paste any Azure Subscription ID, tenant ID or domain and instantly find the associated Microsoft Entra tenant. Sub2tenant uses the Azure Resource Manager WWW-Authenticate header and Microsoft Graph tenantRelationships API to return tenantId, displayName and defaultDomainName. No sign-in required and no lookup data stored.",
-    "applicationCategory": "DeveloperApplication",
+    "description": "Lookup Microsoft Entra tenant information from an Azure Subscription ID, tenant ID or verified domain. sub2tenant uses the Azure Resource Manager WWW-Authenticate header and Microsoft Graph tenantRelationships API to return tenantId, displayName and defaultDomainName. No sign-in required and no lookup data stored.",
+    "applicationCategory": "Utility",
     "operatingSystem": "Any",
+    "featureList": [
+      "Azure Subscription ID to tenant lookup",
+      "Tenant ID to tenant details lookup",
+      "Domain to tenant lookup",
+      "Email address handled by extracting the domain",
+      "Uses ARM WWW-Authenticate and Microsoft Graph tenantRelationships",
+      "No sign-in required and no lookup data stored"
+    ],
     "creator": {
       "@type": "Organization",
-      "name": "sub2tenant.com"
+      "name": "sub2tenant"
     },
-    "featureList": [
-      "Lookup Microsoft Entra tenant from Azure Subscription ID",
-      "Returns tenantId, displayName and defaultDomainName",
-      "Supports subscription ID, tenant ID and domain lookups",
-      "Uses ARM WWW-Authenticate header and Microsoft Graph tenantRelationships API",
-      "No sign-in required and no lookup data stored",
-      "find tenant from subscription id"
+    "about": {
+      "@type": "Thing",
+      "name": "Azure Subscription, Microsoft Entra ID"
+    }
+  }
+  </script>
+
+  <!-- FAQ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How do I find which tenant an Azure Subscription ID belongs to?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Paste the Azure Subscription ID into sub2tenant to perform a subscription-to-tenant lookup using ARM and Microsoft Graph. No sign-in is required and nothing is logged or stored."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does sub2tenant store any lookup data?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. sub2tenant does not log or store subscription IDs, tenant IDs or domains. All lookups happen in memory and are discarded immediately."
+        }
+      }
+    ]
+  }
+  </script>
+
+  <!-- Breadcrumb list -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://sub2tenant.com/"
+      }
     ]
   }
   </script>
@@ -68,8 +122,10 @@
 <body>
   <main class="page">
     <section class="hero" aria-labelledby="hero-title">
+      <h1 id="hero-title" class="visually-hidden" role="heading" aria-level="1">
+        Azure Subscription ID to Microsoft Entra tenant lookup
+      </h1>
       <div class="hero-inner">
-
         <!-- TOP: search bar, status, results -->
         <div class="search-stack">
           <form id="lookup-form" class="hero-form">
@@ -162,57 +218,65 @@
         <!-- BELOW: title + explanation -->
         <section class="hero-copy">
           <p class="hero-lead">
-            <strong>Sub2tenant</strong> maps any Azure Subscription ID to its Microsoft Entra tenant.
-            It extracts the <code>tenantId</code> from the Azure Resource Manager <code>WWW-Authenticate</code> header
-            and resolves <code>displayName</code> and <code>defaultDomainName</code> via Microsoft Graph’s
-            <code>tenantRelationships</code> API. No sign-in, no logging, no stored lookup data.
+            <strong>sub2tenant</strong> maps any Azure Subscription ID to its Microsoft Entra tenant.
+            It extracts the <code>tenantId</code> from the Azure Resource Manager
+            <code>WWW-Authenticate</code> header and uses Microsoft Graph’s
+            <code>tenantRelationships</code> API to resolve <code>displayName</code> and
+            <code>defaultDomainName</code>. No sign-in, no logging, no stored lookup data.
           </p>
 
           <p class="hero-lead hero-lead-secondary">
-            Also supports tenant lookups by tenant ID or domain name.
+            Also supports tenant lookups by tenant ID or verified domain name — all in one input field.
           </p>
         </section>
       </div>
     </section>
    
     <div class="visually-hidden">
-      <h2>What is sub2tenant?</h2>
+      <h2>Azure Subscription to tenant lookup</h2>
       <p>
-        sub2tenant is a small Azure utility that lets you find which Microsoft Entra ID tenant
-        an Azure Subscription ID, tenant ID or domain name belongs to. It is useful for MSPs,
-        cloud admins and incident responders who receive only a subscription ID in a ticket,
-        alert, invoice or report and need to quickly identify the owning tenant.
+        sub2tenant lets you find which Microsoft Entra tenant an Azure subscription belongs to. It supports
+        lookups using an Azure Subscription ID (also called a subscription GUID or subscription identifier),
+        allowing administrators to determine the owning tenant when only the subscription ID is known from
+        logs, alerts, invoices or automation systems. The service performs an unauthenticated Azure Resource
+        Manager request to read the tenant value from the <code>WWW-Authenticate</code> header and resolves
+        tenant details using Microsoft Graph's <code>tenantRelationships</code> API.
+      </p>
+      <p>
+        This page also covers the Azure subscription ID tenant lookup tool scenario, where the goal is to
+        quickly determine the tenant behind a subscription GUID without portal access or elevated roles.
+      </p>     
+
+      <h2>Tenant ID and domain lookups</h2>
+      <p>
+        The tool also returns tenant information when a Microsoft Entra tenant ID is supplied, providing the
+        <code>tenantId</code>, <code>displayName</code> and <code>defaultDomainName</code>. Domain lookups are
+        supported for verified Microsoft 365 and Entra domains, enabling quick identification of which tenant
+        owns a given domain.
       </p>
 
-      <h2>How does the Azure Subscription ID to tenant lookup work?</h2>
+      <h2>Email address handling</h2>
       <p>
-        When you paste a subscription ID, sub2tenant makes an unauthenticated call to the Azure
-        Resource Manager endpoint and reads the <code>WWW-Authenticate</code> header to discover
-        the tenant. It then uses Microsoft Graph’s <code>tenantRelationships</code> API
-        (<code>findTenantInformationByTenantId</code>) to return the tenantId, displayName and
-        defaultDomainName for that Microsoft Entra tenant.
+        Email addresses are accepted for convenience: sub2tenant extracts the apex domain from the email
+        address and performs the same domain-to-tenant lookup. This is useful when only an email is available
+        during troubleshooting or incident response and you still need to identify the underlying tenant.
       </p>
 
-      <h2>Does sub2tenant store any subscription or tenant data?</h2>
+      <h2>Related subscription and tenant queries</h2>
       <p>
-        No. The tool does not log or store subscription IDs, tenant IDs or domains. It performs
-        the lookup in memory, returns the tenant information to your browser and discards the
-        values. Only standard sign-in activity for the managed identity calling Microsoft Graph
-        appears in the author’s own tenant.
+        Typical use cases include: find tenant from subscription ID, map subscription ID to tenant, lookup
+        tenant by subscription GUID, determine which tenant owns a given subscription, identify the tenant
+        from a domain, perform a tenant ID lookup, and handle subscription tenant mapping for MSPs and cloud
+        operations teams.
       </p>
-
-      <h2>Can I look up a tenant by domain or tenant ID?</h2>
-      <p>
-        Yes. In addition to Azure Subscription ID to tenant lookups, sub2tenant supports direct
-        lookups by Microsoft Entra tenant ID or verified domain name. This makes it easy to
-        confirm tenant details when you already know the tenant identifier but still want
-        display name or default domain information.
-      </p>
+      <p>sub2tenant is a lightweight Azure tenant lookup utility for subscription-to-tenant mapping, tenant discovery and quick Microsoft Entra troubleshooting.</p>
+      <p>Categories: Azure tool, Microsoft Entra lookup, subscription tenant mapping.</p>
     </div>
+
 
     <div id="cookie-banner" class="cookie-banner" hidden>
       <p>
-        I added Google Analytics to see if this is actually useful to people. No ads or marketing tracking.
+        Added Google Analytics to see if this is actually useful to people. No ads or marketing tracking.
       </p>
       <div class="cookie-actions">
         <button id="cookie-accept">Accept</button>
@@ -226,8 +290,6 @@
   <div class="footer-inner">
     <span class="footer-links">
       <a href="https://github.com/olhel/sub2tenant-aca" target="_blank">Source on GitHub</a>
-      <span class="sep">•</span>
-      <a href="https://buymeacoffee.com/olhel" target="_blank">Buy me a beer 🍺</a>
     </span>
   </div>
 </footer>

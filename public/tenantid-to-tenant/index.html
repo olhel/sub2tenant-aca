@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Tenant ID to Microsoft Entra Tenant Details · sub2tenant</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="description" content="Retrieve Microsoft Entra tenant details from any tenant ID. sub2tenant uses Microsoft Graph tenantRelationships to return tenantId, displayName and defaultDomainName.">
+
+  <link rel="canonical" href="https://sub2tenant.com/tenantid-to-tenant/" />
+
+  <meta http-equiv="refresh" content="0.2; url=/" />
+  <script>window.location.replace("/");</script>
+</head>
+<body>
+<h1>Tenant ID to Microsoft Entra Tenant Details</h1>
+
+<p>
+  Retrieve Microsoft Entra tenant details from any tenant ID. <strong>sub2tenant</strong> calls
+  Microsoft Graph <code>tenantRelationships</code> with the provided tenant ID and returns the
+  <code>tenantId</code>, <code>displayName</code> and <code>defaultDomainName</code>.
+</p>
+
+<p>
+  This is useful when logs, configuration or automation only expose a tenant ID and you need
+  human-readable tenant information. No tenant IDs or lookup results are logged or stored.
+</p>
+
+<noscript>
+  If you are not redirected automatically, visit
+  <a href="/">https://sub2tenant.com/</a>.
+</noscript>
+</body>
+</html>
