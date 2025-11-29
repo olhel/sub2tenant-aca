@@ -1,6 +1,11 @@
 import express from "express";
 import fetch from "node-fetch";
 import { DefaultAzureCredential } from "@azure/identity";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -251,8 +256,12 @@ app.post("/api/lookup", async (req, res) => {
   }
 });
 
-// ---------- START ----------
+// ---------- 404 FALLBACK ----------
+app.use((req, res) => {
+  res.status(404).sendFile(path.join(__dirname, "public", "404.html"));
+});
 
+// ---------- START ----------
 app.listen(port, () => {
   console.log("Service started.");
 });
