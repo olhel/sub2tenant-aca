@@ -6,7 +6,7 @@
   <meta name="format-detection" content="telephone=no">
 
   <!-- Title -->
-  <title>How sub2tenant works · Azure Subscription ID, tenant ID or domain to Microsoft Entra tenant lookup</title>
+  <title>How sub2tenant works</title>
 
   <!-- Primary SEO -->
   <meta name="description" content="How sub2tenant maps an Azure Subscription ID, tenant ID or verified domain to its Microsoft Entra tenant using Azure Resource Manager and Microsoft Graph. No sign-in required and no lookup data stored.">
@@ -114,48 +114,64 @@
 
 <body>
   <main class="page">
-    <section class="hero" aria-labelledby="how-title">
-      <div class="hero-inner">
-        <section class="hero-copy">
-          <h1 id="how-title" class="hero-title" aria-level="1">
-            How <strong>sub2tenant</strong> works
-          </h1>
+      <section class="hero" aria-labelledby="how-title">
+        <div class="hero-inner">
+          <section class="hero-copy">
+            <h1 id="how-title" class="hero-title" aria-level="1">
+              How <strong>sub2tenant</strong> works
+            </h1>
 
-          <p class="hero-lead" style="margin-top: 0.6rem;">
-            <strong>sub2tenant</strong> performs two lightweight lookups to tell you which Microsoft Entra tenant
-            a subscription ID, tenant ID, or verified domain belongs to.
-          </p>
+            <p class="hero-lead" style="margin-top: 0.6rem;">
+              <strong>sub2tenant</strong> performs two lightweight lookups to determine which Microsoft Entra
+              tenant a subscription ID, tenant ID, or verified domain belongs to. It requires no authentication
+              and no access to any customer tenant.
+            </p>
 
-          <p class="hero-lead hero-lead-secondary">
-            <strong>1. Subscription → Tenant</strong><br>
-            Azure Resource Manager exposes the tenant ID for any subscription in the
-            <code>WWW-Authenticate</code> header returned by the subscription endpoint. This requires
-            no authentication, no permissions, and no access to any customer tenant.
-          </p>
+            <p class="hero-lead hero-lead-secondary">
+              <strong>1. Subscription → Tenant ID</strong>
+            </p>
+            <p class="hero-lead hero-lead-secondary">
+              Azure Resource Manager exposes the tenant ID for any subscription in the 
+              <code>WWW-Authenticate</code> header returned by the subscription endpoint. sub2tenant reads this
+              header directly — no permissions or tokens needed — and extracts the correct tenant ID.
+            </p>
 
-          <p class="hero-lead hero-lead-secondary">
-            <strong>2. Tenant → Details</strong><br>
-            The tool uses a managed identity in the tenant that hosts sub2tenant to call Microsoft Graph’s
-            <code>tenantRelationships</code> API. Depending on the input, it uses
-            <code>findTenantInformationByTenantId</code> for subscription IDs and tenant IDs, or
-            <code>findTenantInformationByDomainName</code> for verified domains. Graph returns the tenant’s
-            <code>tenantId</code>, <code>displayName</code>, and <code>defaultDomainName</code>.
-          </p>
+            <p class="hero-lead hero-lead-secondary">
+              <strong>2. Tenant ID / Domain → Tenant details</strong>
+            </p>
 
-          <p class="hero-lead hero-lead-secondary">
-            No lookup data is stored, logged, or transmitted anywhere. Inputs are discarded immediately
-            after the two calls.
-          </p>
+            <p class="hero-lead hero-lead-secondary">
+              Once the tenant ID is known (or when you enter a tenant ID or domain directly), the tool uses a
+              managed identity in its hosting environment to call Microsoft Graph’s 
+              <a href="https://learn.microsoft.com/en-us/graph/api/resources/tenantinformation" 
+                target="_blank" rel="noopener"><code>tenantRelationships</code></a> API. Depending on the input, it uses 
+              <a href="https://learn.microsoft.com/en-us/graph/api/tenantrelationship-findtenantinformationbytenantid"
+                target="_blank" rel="noopener"><code>findTenantInformationByTenantId</code></a> 
+              or 
+              <a href="https://learn.microsoft.com/en-us/graph/api/tenantrelationship-findtenantinformationbydomainname"
+                target="_blank" rel="noopener"><code>findTenantInformationByDomainName</code></a> 
+              to retrieve the tenant’s <code>tenantId</code>, <code>displayName</code>, and 
+              <code>defaultDomainName</code>.
+            </p>
 
-          <p class="hero-lead hero-lead-secondary">
-            For full technical details and the complete code, see the
-            <a href="https://github.com/olhel/sub2tenant-aca" target="_blank" rel="noopener">GitHub repository</a>.
-          </p>
+            <p class="hero-lead hero-lead-secondary">
+              <strong>sub2tenant</strong> never stores subscription IDs, tenant IDs, or domains. Inputs are used
+              only in-memory to perform the two Graph API lookups and are then discarded. A small amount of
+              anonymous metadata (e.g., lookup type and success/failure) is logged to keep the service
+              reliable. Subscription IDs, tenant IDs, and domains are never logged.
+            </p>
 
-          <p class="hero-lead hero-lead-secondary">
-            <a href="/">← Back to lookup</a>
-          </p>
-        </section>
+            <p class="hero-lead hero-lead-secondary">
+              For full technical details and the complete code, see the 
+              <a href="https://github.com/olhel/sub2tenant-aca" target="_blank" rel="noopener">GitHub repository</a>.
+            </p>
+
+            <p class="hero-lead hero-lead-secondary">
+              <a href="/">← Back to lookup</a>
+            </p>
+          </section>
+        </div>
+      </section>
       </div>
     </section>
   </main>

@@ -166,6 +166,23 @@ function getDefaultDomainFromInfo(info) {
   );
 }
 
+// 6) Privacy-friendly lookup logger (no IDs, no domains)
+function logLookupEvent(event, startedAt) {
+  const safeEvent = {
+    ts: new Date().toISOString(),
+    source: "web",
+    ...event,
+  };
+
+  if (startedAt) {
+    safeEvent.durationMs = Date.now() - startedAt;
+  }
+
+  // Single line, easy to parse in Kusto
+  console.log("LOOKUP", JSON.stringify(safeEvent));
+}
+
+
 // ---------- ROUTES ----------
 
 app.get("/api/health", (_req, res) => {
@@ -177,36 +194,71 @@ app.get("/api/health", (_req, res) => {
 //  - Tenant ID (GUID) → tenantId
 //  - Domain → tenantId
 app.post("/api/lookup", async (req, res) => {
+  const startedAt = Date.now();
   const rawInput = (req.body?.subscriptionId || "").trim();
-
-  if (!rawInput) {
-    return res
-      .status(400)
-      .json({ error: "An ID or domain is required." });
-  }
 
   const guid =
     /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 
+  // Helper: always send response + log event once
+  function logAndSend(statusCode, body, event) {
+    res.status(statusCode).json(body);
+    logLookupEvent(
+      {
+        httpStatus: statusCode,
+        inputKind: event.inputKind,
+        mode: event.mode,
+        outcome: event.outcome,
+        errorStage: event.errorStage || null,
+      },
+      startedAt
+    );
+  }
+
+  if (!rawInput) {
+    return logAndSend(
+      400,
+      { error: "An ID or domain is required." },
+      {
+        inputKind: "empty",
+        mode: "invalid",
+        outcome: "validation_error",
+      }
+    );
+  }
+
+  const isGuid = guid.test(rawInput);
+
   // --------------------------
   // CASE 1: GUID → try subscription first, then tenantId
   // --------------------------
-  if (guid.test(rawInput)) {
+  if (isGuid) {
     // 1a) Try as Subscription ID
     try {
       const tenantIdFromSub = await getTenantIdFromSubscription(rawInput);
       const info = await getTenantInfoFromGraphByTenantId(tenantIdFromSub);
       const defaultDomain = getDefaultDomainFromInfo(info);
 
-      return res.json({
-        mode: "subscriptionId",
-        subscriptionId: rawInput,
-        tenantId: tenantIdFromSub,
-        displayName: info.displayName || null,
-        defaultDomain,
-      });
-    } catch (subErr) {
-      console.log("Subscription lookup failed, falling back to tenantId resolution.");
+      return logAndSend(
+        200,
+        {
+          mode: "subscriptionId",
+          subscriptionId: rawInput,
+          tenantId: tenantIdFromSub,
+          displayName: info.displayName || null,
+          defaultDomain,
+        },
+        {
+          inputKind: "guid",
+          mode: "subscriptionId",
+          outcome: "success",
+        }
+      );
+    } catch (_subErr) {
+      console.log(
+        "Subscription lookup failed, falling back to tenantId resolution."
+      );
+      // fall through to tenantId attempt
     }
 
     // 1b) Try as Tenant ID
@@ -214,14 +266,23 @@ app.post("/api/lookup", async (req, res) => {
       const info = await getTenantInfoFromGraphByTenantId(rawInput);
       const defaultDomain = getDefaultDomainFromInfo(info);
 
-      return res.json({
-        mode: "tenantId",
-        tenantId: rawInput,
-        displayName: info.displayName || null,
-        defaultDomain,
-      });
-    } catch (tenantErr) {
+      return logAndSend(
+        200,
+        {
+          mode: "tenantId",
+          tenantId: rawInput,
+          displayName: info.displayName || null,
+          defaultDomain,
+        },
+        {
+          inputKind: "guid",
+          mode: "tenantId",
+          outcome: "success",
+        }
+      );
+    } catch (_tenantErr) {
       console.error("TenantId resolution failed.");
+      // we'll treat this like an unresolved GUID and fall through to domain/invalid handling
     }
   }
 
@@ -230,31 +291,59 @@ app.post("/api/lookup", async (req, res) => {
   // --------------------------
   const domain = normalizeDomainInput(rawInput);
   if (!domain) {
-    return res.status(400).json({
-      error:
-        "That doesn’t look like a subscription ID, tenant ID, or domain. Please check the format and try again.",
-    });
+    // Either non-GUID garbage, or GUID that failed both subscription + tenant paths
+    return logAndSend(
+      400,
+      {
+        error:
+          "That doesn’t look like a subscription ID, tenant ID, or domain. Please check the format and try again.",
+      },
+      {
+        inputKind: isGuid ? "guid" : "other",
+        mode: isGuid ? "guid_unresolved" : "invalid",
+        outcome: "validation_error",
+        errorStage: isGuid ? "guid_lookup_failed" : "parse",
+      }
+    );
   }
 
   try {
     const info = await getTenantInfoFromGraphByDomain(domain);
     const defaultDomain = getDefaultDomainFromInfo(info);
 
-    return res.json({
-      mode: "domain",
-      domain,
-      tenantId: info.tenantId,
-      displayName: info.displayName || null,
-      defaultDomain,
-    });
+    return logAndSend(
+      200,
+      {
+        mode: "domain",
+        domain,
+        tenantId: info.tenantId,
+        displayName: info.displayName || null,
+        defaultDomain,
+      },
+      {
+        inputKind: "domain",
+        mode: "domain",
+        outcome: "success",
+      }
+    );
   } catch (_err) {
     console.error("Domain resolution failed.");
-    return res.status(400).json({
-      error:
-        "Unable to resolve this domain to a Microsoft Entra tenant. Make sure it’s a verified custom domain.",
-    });
+    return logAndSend(
+      400,
+      {
+        error:
+          "Unable to resolve this domain to a Microsoft Entra tenant. Make sure it’s a verified custom domain.",
+      },
+      {
+        inputKind: "domain",
+        mode: "domain",
+        outcome: "graph_error",
+        errorStage: "graph_domain",
+      }
+    );
   }
 });
+
 
 // ---------- 404 FALLBACK ----------
 app.use((req, res) => {

@@ -1,4 +1,4 @@
-# sub2tenant -- Map Azure Subscription IDs to Microsoft Entra tenants
+# sub2tenant - Map Azure Subscription IDs to Microsoft Entra tenants
 
 sub2tenant maps an Azure Subscription ID to its Microsoft Entra tenant. It also supports tenant lookups using a tenant ID or a verified domain name, using only the minimal Microsoft Graph permission required in the hosting tenant.
 
@@ -46,8 +46,9 @@ Only these fields are returned to the client.
 
 sub2tenant is designed to be transparent, minimal, and predictable:
 
--   Subscription IDs, tenant IDs and domains are **not logged**
--   No lookup data is written to disk or stored anywhere
+-   Subscription IDs, tenant IDs and domains are **never logged or stored**
+-   Lookup inputs are processed **in memory only**
+-   A small amount of **anonymous usage metadata** (lookup type and success/failure) is logged to keep the service reliable — never any identifying data
 -   No client secrets or app registrations are used
 -   The backend uses a **system-assigned Managed Identity** in the author's Azure tenant
 -   Only this Managed Identity is granted the Microsoft Graph permission **`CrossTenantInformation.ReadBasic.All`** (required for basic tenant discovery)

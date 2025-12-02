@@ -6,7 +6,7 @@
   <meta name="format-detection" content="telephone=no">
 
   <!-- Title -->
-  <title>About sub2tenant · Azure Subscription ID, tenant ID or domain to Microsoft Entra tenant lookup</title>
+  <title>About sub2tenant · the story behind the tool</title>
 
   <!-- Primary SEO -->
   <meta name="description" content="About sub2tenant, a small open source utility for mapping an Azure Subscription ID, tenant ID or verified domain to its Microsoft Entra tenant. Created and maintained by Olav Helland.">
@@ -117,59 +117,68 @@
   <main class="page">
     <section class="hero" aria-labelledby="about-title">
       <div class="hero-inner">
-        <section class="hero-copy">
-          <h1 id="about-title" class="hero-title" aria-level="1">
-            About <strong>sub2tenant</strong>
-          </h1>
+      <section class="hero-copy">
+        <h1 id="about-title" class="hero-title" aria-level="1">
+          About <strong>sub2tenant</strong>
+        </h1>
 
-          <p class="hero-lead" style="margin-top: 0.6rem;">
-            <strong>sub2tenant</strong> began as a small tool I originally built to automate my own workflow. I often needed to map an
-            Azure Subscription ID to the correct Microsoft Entra tenant, but there was no quick or simple way to do it
-            without a manual two step process.
-          </p>
+        <p class="hero-lead" style="margin-top: 0.6rem;">
+          <strong>sub2tenant</strong> began as a small tool I built to automate a repetitive task in my 
+          workflow. I often needed to map an Azure Subscription ID to the correct Microsoft Entra tenant, 
+          but the only way to do it was a slow, manual two-step process.
+        </p>
 
-          <p class="hero-lead hero-lead-secondary">
-            Before this tool, my workflow was:
-          </p>
+        <p class="hero-lead hero-lead-secondary">
+          Before this tool, my workflow was:
+        </p>
 
-          <p class="hero-lead hero-lead-secondary">
-            1. Use PowerShell to extract the tenant ID using
+        <p class="hero-lead hero-lead-secondary">
+        <ol class="hero-lead hero-lead-secondary">
+          <li>
+            Use PowerShell to extract the tenant ID using 
             <a href="https://www.lieben.nu/liebensraum/2020/08/get-tenant-id-using-azure-subscription-id/"
-               target="_blank" rel="noopener">
-              this method described by Lieben
-            </a><br>
-            2. Look up the tenant ID with the
+              target="_blank" rel="noopener">this method described by Lieben</a>
+          </li>
+          <li>
+            Look up the tenant ID with the 
             <a href="https://www.aadinternals.com/osint" target="_blank" rel="noopener">
               AADInternals OSINT tool
             </a>
-          </p>
+          </li>
+        </ol>
+        </p>
 
-          <p class="hero-lead hero-lead-secondary">
-            This worked, but it was slow and repetitive.
-          </p>
+        <p class="hero-lead hero-lead-secondary">
+          It worked, but it was slow and repetitive. I eventually automated the process as an internal tool 
+          at <a href="https://www.bsure.io/?utm_source=sub2tenant&utm_medium=referral&utm_campaign=sub2tenant" 
+          target="_blank" rel="noopener">Bsure</a>, and later rebuilt it as a small standalone version that 
+          anyone can use without authentication or elevated permissions.
+        </p>
 
-          <p class="hero-lead hero-lead-secondary">
-            I first automated the process as an internal tool at
-            <a href="https://www.bsure.io/?utm_source=sub2tenant&utm_medium=referral&utm_campaign=sub2tenant" target="_blank" rel="noopener">Bsure</a>, and later rebuilt it as a small
-            standalone version that anyone can use without authentication or elevated permissions.
-          </p>
+        <p class="hero-lead hero-lead-secondary">
+          <strong>sub2tenant</strong> never stores or logs subscription IDs, tenant IDs, domains, or email 
+          addresses. Inputs stay in-memory only. To understand how the tool is used and keep it reliable, the 
+          backend logs a small amount of anonymous usage metadata (such as lookup type and success or failure) 
+          — never the identifiers themselves. The project is fully open source, and you can run your own instance
+          from <a href="https://github.com/olhelland/sub2tenant">GitHub</a>.
+        </p>
 
-          <p class="hero-lead hero-lead-secondary">
-            No lookup data is stored, logged or transmitted, and the project is fully open source. If you prefer to run
-            your own instance of the tool, the complete source is available on
-            <a href="https://github.com/olhel/sub2tenant-aca" target="_blank" rel="noopener">GitHub</a>.
-          </p>
+        <p class="hero-lead hero-lead-secondary">
+            For aggregate statistics, <strong>sub2tenant</strong> uses Cloudflare Web Analytics 
+            (cookieless and privacy-friendly). Google Analytics may be temporarily enabled 
+            (with consent) while comparing measurement tools. No ads, profiling, or marketing 
+            tracking are used.
+        </p>
 
-          <p class="hero-lead hero-lead-secondary">
-            The project is created and maintained by
-            <a href="https://www.linkedin.com/in/olavhelland" target="_blank" rel="me noopener">
-            Olav Helland</a>, a cloud architect working with Microsoft Entra and M365.
-          </p>
+        <p class="hero-lead hero-lead-secondary">
+          Created and maintained by 
+          <a href="https://www.linkedin.com/in/olavhelland" target="_blank" rel="me noopener">Olav Helland</a>.
+        </p>
 
-          <p class="hero-lead hero-lead-secondary">
-            <a href="/">← Back to lookup</a>
-          </p>
-        </section>
+        <p class="hero-lead hero-lead-secondary">
+          <a href="/">← Back to lookup</a>
+        </p>
+      </section>
       </div>
     </section>
   </main>

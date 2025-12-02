@@ -8,10 +8,10 @@
   <meta name="format-detection" content="telephone=no">
 
   <!-- Title -->
-  <title>Azure Subscription ID, tenant ID or domain to Microsoft Entra tenant lookup · sub2tenant</title>
+  <title>Microsoft Entra tenant lookup from subscription ID, tenant ID or domain · sub2tenant</title>
 
   <!-- Primary SEO -->
-  <meta name="description" content="Lookup Microsoft Entra tenants from an Azure subscription ID, tenant ID or verified domain — fast, accurate and with no sign-in or logging." />
+  <meta name="description" content="Lookup Microsoft Entra tenants using an Azure subscription ID, tenant ID or domain. Fast, accurate, and simple to use.">
   <meta name="keywords" content="Azure subscription ID lookup, subscription GUID lookup, subscription identifier tenant mapping, find tenant from subscription ID, Azure tenant lookup tool, tenantId lookup, domain tenant lookup, Microsoft Entra tenant discovery">
   <meta name="robots" content="index, follow">
   <meta property="og:locale" content="en_US">
@@ -28,8 +28,8 @@
   <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://sub2tenant.com/">
-  <meta property="og:title" content="Azure Subscription ID, tenant ID or domain to Microsoft Entra tenant lookup · sub2tenant">
-  <meta property="og:description" content="Lookup Microsoft Entra tenants from an Azure subscription ID, tenant ID or verified domain — fast, accurate and with no sign-in or logging." />
+  <meta property="og:title" content="Microsoft Entra tenant lookup from subscription ID, tenant ID or domain · sub2tenant">
+  <meta property="og:description" content="Lookup Microsoft Entra tenants using an Azure subscription ID, tenant ID or domain. Fast, accurate, and simple to use.">
   <meta property="og:image" content="https://sub2tenant.com/assets/og/og-image.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -37,8 +37,8 @@
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:url" content="https://sub2tenant.com/">
-  <meta name="twitter:title" content="Azure Subscription ID, tenant ID or domain to Microsoft Entra tenant lookup · sub2tenant">
-  <meta name="twitter:description" content="Lookup Microsoft Entra tenants from an Azure subscription ID, tenant ID or verified domain — fast, accurate and with no sign-in or logging." />
+  <meta name="twitter:title" content="Microsoft Entra tenant lookup from subscription ID, tenant ID or domain · sub2tenant">
+  <meta name="twitter:description" content="Lookup Microsoft Entra tenants using an Azure subscription ID, tenant ID or domain. Fast, accurate, and simple to use.">
   <meta name="twitter:image" content="https://sub2tenant.com/assets/og/og-image.png">
 
   <!-- Preload OG Image -->
@@ -51,7 +51,7 @@
     "@type": "WebApplication",
     "name": "sub2tenant",
     "url": "https://sub2tenant.com/",
-    "description": "Lookup Microsoft Entra tenant information from an Azure Subscription ID, tenant ID or verified domain. sub2tenant uses the Azure Resource Manager WWW-Authenticate header and Microsoft Graph tenantRelationships API to return tenantId, displayName and defaultDomainName. No sign-in required and no lookup data stored.",
+    "description": "Lookup Microsoft Entra tenant information from an Azure subscription ID, tenant ID or verified domain. sub2tenant uses the Azure Resource Manager WWW-Authenticate header and Microsoft Graph tenantRelationships API to return tenantId, displayName and defaultDomainName. No sign-in required; subscription IDs, tenant IDs and domains are never stored, and only anonymous usage metadata is logged.",
     "applicationCategory": "Utility",
     "operatingSystem": "Any",
     "featureList": [
@@ -60,7 +60,7 @@
       "Domain to tenant lookup",
       "Email address handled by extracting the domain",
       "Uses ARM WWW-Authenticate and Microsoft Graph tenantRelationships",
-      "No sign-in required and no lookup data stored"
+      "No sign-in required and no identifying data ever stored"
     ],
     "creator": {
       "@type": "Person",
@@ -90,7 +90,7 @@
       "name": "How do I find which tenant an Azure Subscription ID belongs to?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Paste the Azure Subscription ID into sub2tenant to perform a subscription-to-tenant lookup using Azure Resource Manager and Microsoft Graph. No sign-in is required and nothing is logged or stored."
+        "text": "Paste the Azure Subscription ID into sub2tenant to perform a subscription-to-tenant lookup using Azure Resource Manager and Microsoft Graph. No sign-in is required. Subscription IDs, tenant IDs and domains are never stored; only anonymous usage metadata is logged to keep the service reliable."
       }
     },
     {
@@ -122,7 +122,7 @@
       "name": "Does sub2tenant store any lookup data?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "No. sub2tenant does not log or store subscription IDs, tenant IDs, domains or email addresses. All lookups happen in memory and are discarded immediately."
+        "text": "sub2tenant does not log or store subscription IDs, tenant IDs, domains or email addresses. All lookup inputs stay in memory only. To keep the service reliable, only anonymous usage metadata such as lookup type and success or failure is logged."
       }
     }
   ]
@@ -153,7 +153,7 @@
   <main class="page">
     <section class="hero" aria-labelledby="hero-title">
       <h1 id="hero-title" class="visually-hidden" role="heading" aria-level="1">
-        Azure Subscription ID, tenant ID or domain to Microsoft Entra tenant lookup
+        Microsoft Entra tenant lookup from an Azure subscription ID, tenant ID or domain
       </h1>
       <div class="hero-inner">
         <!-- TOP: search bar, status, results -->
@@ -248,7 +248,7 @@
         <!-- BELOW: title + explanation -->
         <section class="hero-copy">
         <p class="hero-lead">
-          <strong>sub2tenant</strong> maps any Azure Subscription ID, tenant ID or verified domain to its Microsoft Entra tenant.
+          <strong>sub2tenant</strong> maps any Azure subscription ID, tenant ID or verified domain to its Microsoft Entra tenant.
         </p>
         </section>
       </div>
