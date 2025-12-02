@@ -15,6 +15,40 @@ const port = process.env.PORT || 8080;
 app.use(express.static("public"));
 app.use(express.json());
 
+// ---------- SECURITY HEADERS ----------
+
+app.use((req, res, next) => {
+  // HSTS: tell browsers this site is always HTTPS
+  res.setHeader(
+    "Strict-Transport-Security",
+    "max-age=31536000; includeSubDomains; preload"
+  );
+
+  // Prevent clickjacking (no iframing by other sites)
+  res.setHeader("X-Frame-Options", "SAMEORIGIN");
+
+  // COOP: isolate the top-level browsing context
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+
+  // (Optional but nice) Basic CSP to reduce XSS risk.
+  // If you want to keep it simple, you can leave this commented out at first.
+  const csp = [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com",
+    "connect-src 'self' https://management.azure.com https://graph.microsoft.com https://ipapi.co https://www.google-analytics.com https://www.googletagmanager.com",
+    "img-src 'self' data: https://www.google-analytics.com https://www.googletagmanager.com",
+    "style-src 'self'",
+    "font-src 'self'",
+    "frame-ancestors 'self'",
+    "base-uri 'self'",
+    "form-action 'self'"
+  ].join("; ");
+
+  res.setHeader("Content-Security-Policy", csp);
+
+  next();
+});
+
 // ---------- AZURE CREDENTIAL ----------
 
 const credential = new DefaultAzureCredential();
