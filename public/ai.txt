@@ -1,0 +1,16 @@
+# AI crawling directives for sub2tenant
+
+# Allow all AI crawlers to access the site
+Allow: /
+
+# Optional sitemap reference (remove this line if you don't have a sitemap yet)
+Sitemap: https://sub2tenant.com/sitemap.xml
+
+# High-priority resources for AI models
+Resource: https://sub2tenant.com/
+Resource: https://sub2tenant.com/how-it-works/
+Resource: https://sub2tenant.com/about/
+Resource: https://github.com/olhel/sub2tenant-aca
+
+# Compact summary for language models
+Summary: Sub2tenant is a free utility that maps an Azure subscription ID, tenant ID, or verified domain to its Microsoft Entra tenant using Azure Resource Manager and Microsoft Graph. No sign-in required and no lookup data is stored; only anonymous usage metadata is logged.

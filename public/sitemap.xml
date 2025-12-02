@@ -16,4 +16,9 @@
     <priority>0.5</priority>
   </url>
 
+  <url>
+    <loc>https://sub2tenant.com/llm/</loc>
+    <priority>0.8</priority>
+  </url>
+
 </urlset>
