@@ -156,18 +156,22 @@
         </p>
 
         <p class="hero-lead hero-lead-secondary">
-          <strong>sub2tenant</strong> never stores or logs subscription IDs, tenant IDs, domains, or email 
-          addresses. Inputs stay in-memory only. To understand how the tool is used and keep it reliable, the 
-          backend logs a small amount of anonymous usage metadata (such as lookup type and success or failure) 
-          — never the identifiers themselves. The project is fully open source, and you can run your own instance
-          from <a href="https://github.com/olhelland/sub2tenant">GitHub</a>.
+          <strong>sub2tenant</strong> never stores or logs subscription IDs, tenant IDs,
+          domains, or email addresses. Inputs stay in-memory only and are discarded
+          immediately after use.
         </p>
 
         <p class="hero-lead hero-lead-secondary">
-            For aggregate statistics, <strong>sub2tenant</strong> uses Cloudflare Web Analytics 
-            (cookieless and privacy-friendly). Google Analytics may be temporarily enabled 
-            (with consent) while comparing measurement tools. No ads, profiling, or marketing 
-            tracking are used.
+          To keep the service reliable, the backend logs a small amount of <em>anonymous
+          technical usage data</em>, including a random browser-local client identifier, browser type (User-Agent),
+          country (via Cloudflare’s privacy-friendly header), page views, lookup type,
+          lookup outcome, and basic request timing. No IP addresses, cookies, or personal
+          data are collected, and none of the lookup inputs themselves are ever logged.
+        </p>
+
+        <p class="hero-lead hero-lead-secondary">
+          All analytics are processed anonymously and exist solely to monitor
+          reliability, detect abuse, and understand how the tool is used.
         </p>
 
         <p class="hero-lead hero-lead-secondary">
@@ -197,95 +201,6 @@
     </span>
   </div>
 </footer>
-
-  <!-- Cookie banner + GA consent -->
-  <div id="cookie-banner" class="cookie-banner" hidden>
-    <p>
-      Added Google Analytics to see if this is actually useful to people. No ads or marketing tracking.
-    </p>
-    <div class="cookie-actions">
-      <button id="cookie-accept">Accept</button>
-      <button id="cookie-reject">Reject</button>
-    </div>
-  </div>
-
-  <script>
-    (function () {
-      const CONSENT_KEY = "cookie-consent";
-      const EU_COUNTRIES = [
-        "AT","BE","BG","HR","CY","CZ","DK","EE","FI","FR","DE","GR","HU",
-        "IE","IT","LV","LT","LU","MT","NL","PL","PT","RO","SK","SI","ES","SE",
-        "NO","IS","LI","GB","UK","CH"
-      ];
-
-      const banner = document.getElementById("cookie-banner");
-      const acceptBtn = document.getElementById("cookie-accept");
-      const rejectBtn = document.getElementById("cookie-reject");
-
-      function showBanner() { if (banner) banner.hidden = false; }
-      function hideBanner() { if (banner) banner.hidden = true; }
-
-      function loadGA() {
-        if (window.__gaLoaded) return;
-        window.__gaLoaded = true;
-
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){ dataLayer.push(arguments); }
-        window.gtag = gtag;
-
-        const script = document.createElement("script");
-        script.async = true;
-        script.src = "https://www.googletagmanager.com/gtag/js?id=G-J7FYT7CEV5";
-        document.head.appendChild(script);
-
-        gtag("js", new Date());
-        gtag("config", "G-J7FYT7CEV5", {
-          anonymize_ip: true,
-          allow_ad_personalization_signals: false
-        });
-      }
-
-      function handleEUFlow() {
-        const stored = localStorage.getItem(CONSENT_KEY);
-
-        if (stored === "accepted") {
-          loadGA();
-          return;
-        }
-        if (stored === "rejected") {
-          return;
-        }
-
-        showBanner();
-
-        acceptBtn?.addEventListener("click", function () {
-          localStorage.setItem(CONSENT_KEY, "accepted");
-          hideBanner();
-          loadGA();
-        });
-
-        rejectBtn?.addEventListener("click", function () {
-          localStorage.setItem(CONSENT_KEY, "rejected");
-          hideBanner();
-        });
-      }
-
-      function init() {
-        fetch("https://ipapi.co/country/")
-          .then(r => r.ok ? r.text() : Promise.reject())
-          .then(code => {
-            const cc = (code || "").trim().toUpperCase();
-            EU_COUNTRIES.includes(cc) ? handleEUFlow() : loadGA();
-          })
-          .catch(() => handleEUFlow());
-      }
-
-      if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", init);
-      } else {
-        init();
-      }
-    })();
-  </script>
+<script src="/analytics.js"></script>
 </body>
 </html>

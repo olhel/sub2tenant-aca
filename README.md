@@ -44,16 +44,24 @@ Only these fields are returned to the client.
 
 ## Privacy and security
 
-sub2tenant is designed to be transparent, minimal, and predictable:
+sub2tenant is intentionally minimal, transparent, and privacy-first:
 
--   Subscription IDs, tenant IDs and domains are **never logged or stored**
--   Lookup inputs are processed **in memory only**
--   A small amount of **anonymous usage metadata** (lookup type and success/failure) is logged to keep the service reliable — never any identifying data
--   No client secrets or app registrations are used
--   The backend uses a **system-assigned Managed Identity** in the author's Azure tenant
--   Only this Managed Identity is granted the Microsoft Graph permission **`CrossTenantInformation.ReadBasic.All`** (required for basic tenant discovery)
--   Users of the public site do **not** need any permissions, tokens, or authentication
--   ARM calls are unauthenticated; Graph calls are made by the Managed Identity
+- Subscription IDs, tenant IDs, and domains are **never logged or stored**
+- Lookup inputs are processed **in memory only** and discarded immediately
+- No IP addresses, cookies, tokens, or personal data are collected
+- A small amount of **anonymous technical usage metadata** is logged to keep the
+  service reliable, including:
+  - an anonymous browser-local client identifier
+  - browser type (User-Agent)
+  - country (via Cloudflare’s privacy-friendly `CF-IPCountry` header)
+  - page views and request paths
+  - lookup type, lookup outcome, and basic request timing
+- None of the lookup inputs themselves are ever logged
+- The backend uses a **system-assigned Managed Identity** in the author’s Azure tenant
+- Only this Managed Identity is granted the Microsoft Graph permission
+  **`CrossTenantInformation.ReadBasic.All`** (required for basic tenant discovery)
+- Users of the public site do **not** need any permissions, tokens, or authentication
+- ARM calls are unauthenticated; Graph calls are made by the Managed Identity
 
 ------------------------------------------------------------------------
 

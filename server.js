@@ -1,5 +1,6 @@
 import express from "express";
 import fetch from "node-fetch";
+import rateLimit from "express-rate-limit";
 import { DefaultAzureCredential } from "@azure/identity";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -9,6 +10,15 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = process.env.PORT || 8080;
+
+// ---------- RATE LIMITS ----------
+
+const lookupLimiter = rateLimit({
+  windowMs: 60 * 1000,   // 1 minute
+  max: 20,               // 30 requests per minute per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // ---------- STATIC + JSON ----------
 
@@ -200,11 +210,14 @@ function getDefaultDomainFromInfo(info) {
   );
 }
 
-// 6) Privacy-friendly lookup logger (no IDs, no domains)
-function logLookupEvent(event, startedAt) {
+// 6) Privacy-friendly lookup logger (with anonymous client + UA + country)
+function logLookupEvent(req, event, startedAt) {
   const safeEvent = {
     ts: new Date().toISOString(),
     source: "web",
+    clientId: req.headers["x-client-id"] || null,
+    userAgent: req.headers["user-agent"] || null,
+    country: req.headers["cf-ipcountry"] || null,
     ...event,
   };
 
@@ -212,10 +225,8 @@ function logLookupEvent(event, startedAt) {
     safeEvent.durationMs = Date.now() - startedAt;
   }
 
-  // Single line, easy to parse in Kusto
   console.log("LOOKUP", JSON.stringify(safeEvent));
 }
-
 
 // ---------- ROUTES ----------
 
@@ -227,17 +238,17 @@ app.get("/api/health", (_req, res) => {
 //  - Subscription ID (GUID) → tenantId
 //  - Tenant ID (GUID) → tenantId
 //  - Domain → tenantId
-app.post("/api/lookup", async (req, res) => {
+app.post("/api/lookup", lookupLimiter, async (req, res) => {
   const startedAt = Date.now();
   const rawInput = (req.body?.subscriptionId || "").trim();
 
   const guid =
     /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 
-  // Helper: always send response + log event once
   function logAndSend(statusCode, body, event) {
     res.status(statusCode).json(body);
     logLookupEvent(
+      req,
       {
         httpStatus: statusCode,
         inputKind: event.inputKind,
@@ -378,6 +389,31 @@ app.post("/api/lookup", async (req, res) => {
   }
 });
 
+// ---------- VISIT LOGGING ----------
+
+app.post("/api/visit", (req, res) => {
+  const clientId = req.headers["x-client-id"] || null;
+  const userAgent = req.headers["user-agent"] || null;
+  const country = req.headers["cf-ipcountry"] || null;
+
+  const pathValue =
+    typeof req.body?.path === "string" ? req.body.path : null;
+
+  const event = {
+    ts: new Date().toISOString(),
+    source: "web",
+    kind: "visit",
+    clientId,
+    userAgent,
+    country,
+    path: pathValue,
+  };
+
+  console.log("VISIT", JSON.stringify(event));
+
+  // fire-and-forget, no payload needed
+  res.status(204).end();
+});
 
 // ---------- 404 FALLBACK ----------
 app.use((req, res) => {

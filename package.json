@@ -7,8 +7,9 @@
     "node": ">=18"
   },
   "dependencies": {
-    "express": "^4.19.2",
     "@azure/identity": "^4.2.0",
+    "express": "^4.19.2",
+    "express-rate-limit": "^8.2.1",
     "node-fetch": "^3.3.2"
   }
 }
