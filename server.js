@@ -210,14 +210,109 @@ function getDefaultDomainFromInfo(info) {
   );
 }
 
-// 6) Privacy-friendly lookup logger (with anonymous client + UA + country)
+// ---------- Bot detection helpers ----------
+
+function isLegacyBrowserBot(userAgentRaw = "") {
+  const ua = (userAgentRaw || "").toLowerCase();
+
+  // Old Windows versions (XP/2000 = 5.x, Vista = 6.0, 7 = 6.1)
+  const isOldWindows =
+    ua.includes("windows nt 5.") ||
+    ua.includes("windows nt 6.0") ||
+    ua.includes("windows nt 6.1");
+
+  if (!isOldWindows) return false;
+
+  // Try to detect Chrome major version
+  const chromeMatch = ua.match(/chrome\/(\d+)\./);
+  if (chromeMatch) {
+    const major = parseInt(chromeMatch[1], 10) || 0;
+    // Chrome < 80 on these OSes in 2025 is almost certainly a bot
+    if (major > 0 && major < 80) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function getBotInfo(userAgentRaw = "") {
+  const ua = (userAgentRaw || "").toLowerCase();
+
+  if (!ua) {
+    return { isBot: false, botKind: null };
+  }
+
+  // Known named bots (search/LLM/social)
+  const knownBots = [
+    { match: "googlebot",           kind: "googlebot" },
+    { match: "bingbot",             kind: "bingbot" },
+    { match: "duckduckbot",         kind: "duckduckbot" },
+    { match: "baiduspider",         kind: "baiduspider" },
+    { match: "yandexbot",           kind: "yandexbot" },
+    { match: "gptbot",              kind: "gptbot" },
+    { match: "claudebot",           kind: "claudebot" },
+    { match: "perplexitybot",       kind: "perplexitybot" },
+    { match: "facebookexternalhit", kind: "facebook" },
+    { match: "twitterbot",          kind: "twitter" },
+  ];
+
+  for (const b of knownBots) {
+    if (ua.includes(b.match)) {
+      return { isBot: true, botKind: b.kind };
+    }
+  }
+
+  // Generic automation / headless / tooling
+  const genericBotHints = [
+    "headlesschrome",
+    "phantomjs",
+    "playwright",
+    "puppeteer",
+    "selenium",
+    "crawler",
+    "spider",
+    "crawl",
+    "slurp",
+    "uptime",
+    "pingdom",
+    "siteaudit",
+    "lighthouse",
+    "curl/",
+    "wget/",
+    "python-requests",
+    "httpclient",
+    "okhttp",
+    "java/",
+    "libwww-perl",
+  ];
+
+  if (genericBotHints.some((h) => ua.includes(h))) {
+    return { isBot: true, botKind: "generic-bot" };
+  }
+
+  // Very old Chrome on very old Windows → almost certainly bot
+  if (isLegacyBrowserBot(ua)) {
+    return { isBot: true, botKind: "legacy-browser-bot" };
+  }
+
+  // Default: treat as human
+  return { isBot: false, botKind: null };
+}
+
+// ---------- Privacy-friendly lookup logger (with bot info) ----------
 function logLookupEvent(req, event, startedAt) {
+  const userAgent = req.headers["user-agent"] || null;
+  const { isBot, botKind } = getBotInfo(userAgent);
+
   const safeEvent = {
     ts: new Date().toISOString(),
     source: "web",
     clientId: req.headers["x-client-id"] || null,
-    userAgent: req.headers["user-agent"] || null,
+    userAgent,
     country: req.headers["cf-ipcountry"] || null,
+    isBot,
+    botKind,
     ...event,
   };
 
@@ -227,6 +322,7 @@ function logLookupEvent(req, event, startedAt) {
 
   console.log("LOOKUP", JSON.stringify(safeEvent));
 }
+
 
 // ---------- ROUTES ----------
 
@@ -395,6 +491,7 @@ app.post("/api/visit", (req, res) => {
   const clientId = req.headers["x-client-id"] || null;
   const userAgent = req.headers["user-agent"] || null;
   const country = req.headers["cf-ipcountry"] || null;
+  const { isBot, botKind } = getBotInfo(userAgent);
 
   const pathValue =
     typeof req.body?.path === "string" ? req.body.path : null;
@@ -407,6 +504,8 @@ app.post("/api/visit", (req, res) => {
     userAgent,
     country,
     path: pathValue,
+    isBot,
+    botKind,
   };
 
   console.log("VISIT", JSON.stringify(event));
