@@ -10,8 +10,8 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// We run behind proxies (Cloudflare / Azure), trust X-Forwarded-* headers
-app.set("trust proxy", true);
+// We’re behind a proxy; trust the first hop for X-Forwarded-For
+app.set("trust proxy", 1);
 
 const port = process.env.PORT || 8080;
 
