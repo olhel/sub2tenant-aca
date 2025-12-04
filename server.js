@@ -9,6 +9,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+
+// We run behind proxies (Cloudflare / Azure), trust X-Forwarded-* headers
+app.set("trust proxy", true);
+
 const port = process.env.PORT || 8080;
 
 // ---------- RATE LIMITS ----------
