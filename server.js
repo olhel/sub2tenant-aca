@@ -60,7 +60,17 @@ app.use((req, res, next) => {
 
 // ---------- STATIC + JSON ----------
 
-app.use(express.static("public"));
+app.use(
+  express.static("public", {
+    setHeaders(res, filePath) {
+      if (filePath.endsWith(".html")) {
+        res.setHeader("Cache-Control", "no-cache");
+      } else if (filePath.endsWith(".css") || filePath.endsWith(".js")) {
+        res.setHeader("Cache-Control", "public, max-age=300, must-revalidate");
+      }
+    },
+  })
+);
 app.use(express.json());
 
 // ---------- AZURE CREDENTIAL ----------
