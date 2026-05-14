@@ -492,7 +492,7 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 1.75rem;
-  width: min(700px, calc(100vw - 3.2rem));
+  width: min(620px, calc(100vw - 3.2rem));
   margin-top: 3.3rem;
   margin-left: 50%;
   padding: 1.3rem 1.25rem 1.3rem 1.45rem;
@@ -548,39 +548,21 @@ body {
   text-decoration: underline;
 }
 
-.lookup-cta > a {
+.lookup-cta-button {
   flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 2.25rem;
-  padding: 0 1.05rem;
-  border: 1px solid color-mix(in srgb, var(--accent) 86%, var(--text-muted));
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--accent) 90%, var(--bg-main));
-  color: var(--text-main);
-  font-size: 0.86rem;
-  font-weight: 700;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  color: rgba(229, 231, 235, 0.88);
   text-decoration: none;
   white-space: nowrap;
-  box-shadow: 0 7px 14px rgba(2, 72, 206, 0.12);
-  transition:
-    background var(--transition-fast),
-    border-color var(--transition-fast),
-    box-shadow var(--transition-fast),
-    transform var(--transition-fast);
 }
 
-.lookup-cta > a:hover {
-  background: color-mix(in srgb, var(--accent-strong) 92%, var(--bg-main));
-  border-color: color-mix(in srgb, var(--accent-strong) 88%, var(--text-muted));
-  color: var(--text-main);
+.lookup-cta-button:hover {
+  color: rgba(229, 231, 235, 0.88);
   text-decoration: none;
-  transform: translateY(-1px);
-  box-shadow: 0 9px 18px rgba(2, 72, 206, 0.16);
 }
 
-.lookup-cta > a:focus-visible {
+.lookup-cta-button:focus-visible {
   outline: none;
   box-shadow:
     0 0 0 2px var(--bg-main),
@@ -931,7 +913,7 @@ body {
     transform: none;
   }
 
-  .lookup-cta > a {
+  .lookup-cta-button {
     width: 100%;
     min-height: 2.55rem;
   }
