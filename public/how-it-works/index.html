@@ -62,58 +62,28 @@
 
   <!-- Styles -->
   <link rel="stylesheet" href="/styles.css">
-  <!-- Page-specific tweaks -->
-  <style>
-    /* Less vertical space than the main lookup page */
-    .page {
-      padding-top: 8vh;
-    }
-
-    /* Make the H1 look like a real title */
-    .hero-title {
-      font-size: 1.35rem;
-      font-weight: 600;
-      margin: 0 0 0.8rem;
-      color: var(--text-main);
-    }
-
-    /* Keep content comfortably narrow */
-    .hero-copy {
-    max-width: 720px;
-    margin: 3rem auto 0;
-    }
-
-    /* Slightly more relaxed line height for text-heavy page */
-    .hero-copy .hero-lead {
-      line-height: 1.62;
-    }
-
-    /* Links inside content: same style as footer links */
-    .hero-copy a {
-    color: color-mix(in srgb, var(--text-main) 75%, var(--text-muted));
-    text-decoration: none;
-    transition: color 0.15s ease;
-    }
-
-    .hero-copy a:hover {
-    text-decoration: underline;
-    color: var(--text-main);
-    }
-
-    @media (max-width: 720px) {
-    .page {
-      padding-top: 0rem;
-    }
-
-    .hero-copy {
-      margin: 1.6rem auto 0;
-    }
-  }
-  </style>
 </head>
 
 <body>
-  <main class="page">
+  <header class="site-header" aria-label="Site header">
+    <div class="site-brand-block">
+      <a class="site-brand" href="/">sub2tenant</a>
+      <p class="site-subtitle">A free tool by <a href="https://www.bsure.io/?utm_source=sub2tenant" target="_blank" rel="noopener noreferrer">bsure.</a></p>
+    </div>
+    <button class="site-menu-button" type="button" aria-controls="site-nav" aria-expanded="false" aria-label="Open menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <nav id="site-nav" class="site-nav" aria-label="Main navigation">
+      <a href="/">Lookup</a>
+      <a href="/how-it-works/" aria-current="page">How it works</a>
+      <a href="/about/">About</a>
+      <a href="https://github.com/olhel/sub2tenant-aca" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </nav>
+  </header>
+
+  <main class="page content-page">
       <section class="hero" aria-labelledby="how-title">
         <div class="hero-inner">
           <section class="hero-copy">
@@ -121,7 +91,7 @@
               How <strong>sub2tenant</strong> works
             </h1>
 
-            <p class="hero-lead" style="margin-top: 0.6rem;">
+            <p class="hero-lead">
               <strong>sub2tenant</strong> performs two lightweight lookups to determine which Microsoft Entra
               tenant a subscription ID, tenant ID, or verified domain belongs to. It requires no authentication
               and no access to any customer tenant.
@@ -177,20 +147,7 @@
     </section>
   </main>
 
-<footer class="footer">
-  <div class="footer-inner">
-    <span class="footer-links">
-      <a href="/">Lookup</a>
-      <span class="sep">·</span>
-      <a href="/how-it-works/" aria-current="page">How it works</a>
-      <span class="sep">·</span>
-      <a href="/about/">About</a>
-      <span class="sep">·</span>
-      <a href="https://github.com/olhel/sub2tenant-aca"
-         target="_blank" rel="noopener noreferrer">GitHub</a>
-    </span>
-  </div>
-</footer>
 <script src="/analytics.js"></script>
+<script src="/navigation.js"></script>
 </body>
 </html>

@@ -24,11 +24,6 @@ const lookupLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// ---------- STATIC + JSON ----------
-
-app.use(express.static("public"));
-app.use(express.json());
-
 // ---------- SECURITY HEADERS ----------
 
 app.use((req, res, next) => {
@@ -62,6 +57,11 @@ app.use((req, res, next) => {
 
   next();
 });
+
+// ---------- STATIC + JSON ----------
+
+app.use(express.static("public"));
+app.use(express.json());
 
 // ---------- AZURE CREDENTIAL ----------
 

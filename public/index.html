@@ -8,7 +8,7 @@
   <meta name="format-detection" content="telephone=no">
 
   <!-- Title -->
-  <title>Microsoft Entra tenant lookup using subscription ID, tenant ID or domain · sub2tenant</title>
+  <title>Tenant lookup using subscription ID, tenant ID or domain · sub2tenant</title>
 
   <!-- Primary SEO -->
   <meta name="description" content="Lookup Microsoft Entra tenants using an Azure subscription ID, tenant ID or domain. Fast, accurate, and simple to use.">
@@ -299,6 +299,24 @@
 </head>
 
 <body>
+  <header class="site-header" aria-label="Site header">
+    <div class="site-brand-block">
+      <a class="site-brand" href="/">sub2tenant</a>
+      <p class="site-subtitle">A free tool by <a href="https://www.bsure.io/?utm_source=sub2tenant" target="_blank" rel="noopener noreferrer">bsure.</a></p>
+    </div>
+    <button class="site-menu-button" type="button" aria-controls="site-nav" aria-expanded="false" aria-label="Open menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <nav id="site-nav" class="site-nav" aria-label="Main navigation">
+      <a href="/" aria-current="page">Lookup</a>
+      <a href="/how-it-works/">How it works</a>
+      <a href="/about/">About</a>
+      <a href="https://github.com/olhel/sub2tenant-aca" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </nav>
+  </header>
+
   <main class="page">
     <section class="hero" aria-labelledby="hero-title">
       <h1 id="hero-title" class="visually-hidden" role="heading" aria-level="1">
@@ -391,6 +409,20 @@
                 </dd>
               </div>
             </dl>
+
+            <aside class="lookup-cta" aria-label="Bsure">
+              <p>
+                <span class="lookup-cta-main">You found your tenant. Now see what needs attention.</span>
+                <span class="lookup-cta-support"><a href="https://www.bsure.io/?utm_source=sub2tenant" target="_blank" rel="noopener noreferrer">Bsure</a> gives IT and security teams continuous visibility into Microsoft 365 and Entra. It helps uncover inactive identities, unused licenses and hidden risks, so the right teams know what to act on.</span>
+              </p>
+              <a
+                href="https://www.bsure.io/?utm_source=sub2tenant"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Explore Bsure
+              </a>
+            </aside>
           </div>
         </div>
 
@@ -446,22 +478,8 @@
 
   </main>
 
-<footer class="footer">
-  <div class="footer-inner">
-    <span class="footer-links">
-      <a href="/" aria-current="page">Lookup</a>
-      <span class="sep">·</span>
-      <a href="/how-it-works/">How it works</a>
-      <span class="sep">·</span>
-      <a href="/about/">About</a>
-      <span class="sep">·</span>
-      <a href="https://github.com/olhel/sub2tenant-aca"
-         target="_blank" rel="noopener noreferrer">GitHub</a>
-    </span>
-  </div>
-</footer>
-
   <script src="/analytics.js"></script>
+  <script src="/navigation.js"></script>
   <script>
     const subscriptionRowEl = document.getElementById("subscriptionRow");
     const form = document.getElementById("lookup-form");

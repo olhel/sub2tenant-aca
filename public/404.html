@@ -8,35 +8,43 @@
 </head>
 
 <body>
+  <header class="site-header" aria-label="Site header">
+    <div class="site-brand-block">
+      <a class="site-brand" href="/">sub2tenant</a>
+      <p class="site-subtitle">A free tool by <a href="https://www.bsure.io/?utm_source=sub2tenant" target="_blank" rel="noopener noreferrer">bsure.</a></p>
+    </div>
+    <button class="site-menu-button" type="button" aria-controls="site-nav" aria-expanded="false" aria-label="Open menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <nav id="site-nav" class="site-nav" aria-label="Main navigation">
+      <a href="/">Lookup</a>
+      <a href="/how-it-works/">How it works</a>
+      <a href="/about/">About</a>
+      <a href="https://github.com/olhel/sub2tenant-aca" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </nav>
+  </header>
+
   <main class="page">
     <section class="hero" aria-labelledby="notfound-title">
       <div class="hero-inner">
         <h1
           id="notfound-title"
-          style="
-            font-size: 1.6rem;
-            font-weight: 500;
-            margin-bottom: 0.6rem;
-            text-align: center;
-          "
+          class="not-found-title"
         >
           Page not found
         </h1>
 
         <p
-          style="
-            color: var(--text-muted);
-            margin-bottom: 1.8rem;
-            font-size: 0.95rem;
-            text-align: center;
-          "
+          class="not-found-text"
         >
           The page you're looking for doesn't exist.
         </p>
 
         <!-- Centered button, using your normal .btn styles -->
-        <div style="display: flex; justify-content: center;">
-          <a href="/" class="btn btn-primary"  style="text-decoration:none;">
+        <div class="not-found-action">
+          <a href="/" class="btn btn-primary not-found-button">
             Go to Lookup
           </a>
         </div>
@@ -44,19 +52,6 @@
     </section>
   </main>
 
-  <footer class="footer">
-    <div class="footer-inner">
-      <span class="footer-links">
-        <a href="/">Lookup</a>
-        <span class="sep">·</span>
-        <a href="/how-it-works/">How it works</a>
-        <span class="sep">·</span>
-        <a href="/about/">About</a>
-        <span class="sep">·</span>
-        <a href="https://github.com/olhel/sub2tenant-aca"
-           target="_blank" rel="noopener noreferrer">GitHub</a>
-      </span>
-    </div>
-  </footer>
+  <script src="/navigation.js"></script>
 </body>
 </html>
