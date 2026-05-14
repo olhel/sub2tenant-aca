@@ -15,7 +15,7 @@
     "domainLookup": "Resolves verified Microsoft 365 and Entra domains to their owning tenant.",
     "emailHandling": "Extracts the domain from an email address and performs a domain lookup.",
     "authRequired": false,
-    "dataStorage": "No subscription IDs, tenant IDs, domains or email addresses are stored. Only anonymous usage metadata such as lookup type and success or failure is logged."
+    "dataStorage": "No subscription IDs, tenant IDs, domains or email addresses are stored. Only anonymous usage metadata such as lookup type and success or failure is logged on backend."
   },
   "idealQueries": [
     "find tenant from Azure subscription ID",
